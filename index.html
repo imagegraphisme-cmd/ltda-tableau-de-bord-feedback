@@ -6,75 +6,78 @@
     <title>LTDA Dashboard PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&family=JetBrains+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap');
         
+        /* Reset & Base */
         * { font-family: 'Inter', sans-serif; font-style: normal !important; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         
-        /* Kerning sélectif : uniquement pour les petits labels */
-        .label-track { text-transform: uppercase; letter-spacing: 0.15em; font-size: 9px; font-weight: 900; }
-        .title-track { letter-spacing: -0.02em; } /* Titres plus serrés */
+        /* Kerning Pro */
+        .label-track { text-transform: uppercase; letter-spacing: 0.12em; font-size: 9px; font-weight: 700; color: #94a3b8; }
+        .title-track { letter-spacing: -0.03em; }
 
+        /* Couleurs Impact */
         .dot-vital { background-color: #ef4444; }
         .dot-important { background-color: #f59e0b; }
         .dot-ok { background-color: #3b82f6; }
         .dot-solved { background-color: #10b981; }
 
+        /* Rows list */
         .bug-row { border-bottom: 1px solid #f1f5f9; transition: background 0.1s; }
         .bug-row:hover { background-color: #f8fafc; }
         
-        .tab-active { background-color: #f1f5f9; color: #000; font-weight: 900; border-left: 4px solid #6b3ce9; }
+        .tab-active { background-color: #f8fafc; color: #000; font-weight: 800; border-left: 3px solid #6b3ce9; }
         
         #overlay { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 200; }
         #overlay.active { transform: translateX(0); }
 
-        /* Méga Zoom Thumbnail */
-        .thumb-container { position: relative; width: 48px; height: 48px; }
-        .thumb-zoom { transition: transform 0.2s ease-in-out, box-shadow 0.2s; cursor: zoom-in; position: absolute; top:0; left:0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #f1f5f9; z-index: 10; }
-        .thumb-zoom:hover { transform: scale(7); z-index: 100; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border-radius: 2px; }
+        /* Hover Zoom Photo */
+        .thumb-container { position: relative; width: 44px; height: 44px; }
+        .thumb-zoom { transition: transform 0.2s ease-in-out, box-shadow 0.2s; cursor: zoom-in; position: absolute; top:0; left:0; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #f1f5f9; z-index: 10; }
+        .thumb-zoom:hover { transform: scale(6); z-index: 100; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15); border-radius: 2px; }
 
-        .landing-card { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .landing-card { animation: fadeInUp 0.5s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-white text-slate-900 overflow-x-hidden">
 
-    <div id="view-landing" class="fixed inset-0 z-[300] flex items-center justify-center bg-[#fdfdff] p-6 text-center">
-        <div class="landing-card bg-white p-12 rounded-[3rem] shadow-2xl border border-slate-50 max-w-md w-full space-y-10">
-            <img src="Plan de travail 1.svg" alt="LTDA" class="h-24 mx-auto">
+    <div id="view-landing" class="fixed inset-0 z-[300] flex items-center justify-center bg-[#fdfdff] p-6">
+        <div class="landing-card bg-white p-12 rounded-[2.5rem] shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100 max-w-sm w-full text-center space-y-10">
+            <img src="Plan de travail 1.svg" alt="LTDA" class="h-24 mx-auto mb-4">
             <div class="space-y-4">
-                <select id="initialProjectSelect" class="w-full border-2 border-slate-100 rounded-2xl p-5 font-black uppercase text-[10px] label-track bg-slate-50 outline-none appearance-none text-center cursor-pointer transition-all">
-                    <option value="">Chargement...</option>
+                <select id="initialProjectSelect" class="w-full border border-slate-200 rounded-xl p-4 font-semibold text-xs bg-slate-50 outline-none appearance-none text-center cursor-pointer">
+                    <option value="">Chargement des projets...</option>
                 </select>
-                <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-[#6b3ce9] text-white font-black py-5 rounded-2xl hover:bg-black transition-all opacity-50 cursor-not-allowed uppercase text-[10px] label-track shadow-xl">Ouvrir le projet</button>
+                <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-[#6b3ce9] text-white font-bold py-4 rounded-xl hover:bg-black transition-all opacity-50 cursor-not-allowed uppercase text-[10px] tracking-widest">Ouvrir le tableau</button>
             </div>
         </div>
     </div>
 
     <div id="view-dashboard" class="hidden flex flex-col min-h-screen">
-        <header class="bg-white border-b border-slate-100 sticky top-0 z-30 px-8 h-20 flex justify-between items-center">
+        <header class="bg-white border-b border-slate-100 sticky top-0 z-30 px-8 h-16 flex justify-between items-center">
             <div class="flex items-center gap-8">
                 <div class="flex items-center gap-3">
-                    <img src="Plan de travail 1.svg" class="h-10" alt="">
-                    <h2 id="currentProjectTitle" class="text-xl font-black uppercase title-track">Projet</h2>
+                    <img src="Plan de travail 1.svg" class="h-8" alt="">
+                    <h2 id="currentProjectTitle" class="text-lg font-bold uppercase title-track tracking-tighter">Projet</h2>
                 </div>
-                <select id="sortSelect" onchange="renderBugList()" class="hidden lg:block bg-slate-50 border border-slate-100 text-[9px] font-black uppercase label-track rounded-xl px-4 py-2 outline-none cursor-pointer">
+                <select id="sortSelect" onchange="renderBugList()" class="hidden lg:block bg-slate-50 border border-slate-100 text-[9px] font-bold uppercase label-track rounded-lg px-3 py-1.5 outline-none cursor-pointer">
                     <option value="id">Chrono</option>
-                    <option value="impact">Impact</option>
-                    <option value="state">État</option>
+                    <option value="Impact">Impact</option>
+                    <option value="State">État</option>
                 </select>
             </div>
             <div class="flex items-center gap-6">
-                <button onclick="location.reload()" class="label-track text-slate-300 hover:text-black transition-colors">Changer</button>
-                <button onclick="toggleOverlay(true)" class="bg-[#6b3ce9] text-white px-8 py-3 rounded-full label-track hover:bg-black transition-all shadow-lg">+ Nouveau</button>
+                <button onclick="location.reload()" class="text-[9px] font-bold uppercase text-slate-300 hover:text-black transition-colors tracking-widest">Changer</button>
+                <button onclick="toggleOverlay(true)" class="bg-[#6b3ce9] text-white px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black transition-all shadow-md">+ Nouveau</button>
             </div>
         </header>
 
         <div class="flex flex-1">
-            <aside class="w-64 bg-white border-r border-slate-100 sticky top-20 h-[calc(100vh-5rem)] p-6 hidden md:block">
-                <p class="label-track text-slate-300 mb-4 px-4">Breakpoints</p>
-                <nav id="breakpointTabs" class="space-y-1">
-                    <button onclick="filterByBreakpoint('all')" class="w-full text-left px-5 py-3 rounded-xl label-track tab-active" id="tab-all">Toutes les vues</button>
+            <aside class="w-56 bg-white border-r border-slate-100 sticky top-16 h-[calc(100vh-4rem)] p-4 hidden md:block">
+                <p class="label-track mb-3 px-4">Breakpoints</p>
+                <nav id="breakpointTabs" class="space-y-0.5">
+                    <button onclick="filterByBreakpoint('all')" class="w-full text-left px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest tab-active" id="tab-all">Toutes les vues</button>
                 </nav>
             </aside>
 
@@ -84,15 +87,15 @@
         </div>
     </div>
 
-    <div id="overlay-bg" class="fixed inset-0 bg-slate-900/10 backdrop-blur-md z-[150] hidden opacity-0 transition-opacity" onclick="toggleOverlay(false)"></div>
-    <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white z-[200] shadow-2xl overflow-y-auto p-12">
+    <div id="overlay-bg" class="fixed inset-0 bg-slate-900/10 backdrop-blur-sm z-[150] hidden opacity-0 transition-opacity" onclick="toggleOverlay(false)"></div>
+    <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-lg bg-white z-[200] shadow-2xl overflow-y-auto p-10">
         <div class="flex justify-between items-center mb-10">
-            <h2 id="formTitle" class="text-2xl font-black uppercase tracking-tight">Rapport</h2>
-            <button onclick="toggleOverlay(false)" class="text-slate-200 text-5xl hover:text-black">&times;</button>
+            <h2 id="formTitle" class="text-xl font-bold uppercase title-track">Rapport d'observation</h2>
+            <button onclick="toggleOverlay(false)" class="text-slate-200 text-4xl hover:text-black transition-colors">&times;</button>
         </div>
-        <form id="bugForm" class="space-y-8 pb-10">
-            <div id="formContent" class="space-y-8"></div>
-            <button type="submit" id="submitBtn" class="w-full bg-[#6b3ce9] text-white font-black py-6 rounded-3xl hover:bg-black transition-all label-track shadow-xl">Confirmer</button>
+        <form id="bugForm" class="space-y-6 pb-10 text-slate-600">
+            <div id="formContent" class="space-y-6"></div>
+            <button type="submit" id="submitBtn" class="w-full bg-[#6b3ce9] text-white font-bold py-5 rounded-2xl hover:bg-black transition-all text-[11px] uppercase tracking-[0.2em] shadow-lg">Confirmer</button>
         </form>
     </div>
 
@@ -101,7 +104,7 @@
         let store = { projects: [], config: {}, bugs: [] };
         let activeProject = null;
         let currentFilter = 'all';
-        let editingId = null; // Stocke l'ID si on édite
+        let editingId = null;
 
         const IMPACT_MAP = { "Vital": 4, "Important": 3, "OK": 2, "Optimisation": 1 };
         const ICONS = { "Widescreen": "🖥️", "Desktop": "💻", "Tablet": "📟", "Mobile (L)": "📱", "Mobile": "🤳" };
@@ -131,16 +134,17 @@
                 store = await resp.json();
                 const select = document.getElementById('initialProjectSelect');
                 select.innerHTML = '<option value="">Choisir Projet</option>' + store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
+                
                 const tabs = document.getElementById('breakpointTabs');
                 store.config.breakpoints.forEach(bp => {
                     const btn = document.createElement('button');
-                    btn.className = "w-full text-left px-5 py-3 rounded-xl label-track text-slate-400 hover:bg-slate-50 transition-all";
+                    btn.className = "w-full text-left px-4 py-2.5 rounded-lg text-[10px] font-bold text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest";
                     btn.id = `tab-${bp}`; btn.innerHTML = `${ICONS[bp] || '🌐'} ${bp}`;
                     btn.onclick = () => filterByBreakpoint(bp);
                     tabs.appendChild(btn);
                 });
                 document.getElementById('btn-enter').disabled = false;
-                document.getElementById('btn-enter').classList.remove('opacity-50', 'cursor-not-allowed');
+                document.getElementById('btn-enter').classList.remove('opacity-50');
             } catch (err) { console.error(err); }
         }
 
@@ -168,7 +172,7 @@
             if (currentFilter !== 'all') projectBugs = projectBugs.filter(b => b.Breakpoint && b.Breakpoint.includes(currentFilter));
             
             projectBugs.sort((a, b) => {
-                if (sortBy === 'impact') return (IMPACT_MAP[b.Impact] || 0) - (IMPACT_MAP[a.Impact] || 0);
+                if (sortBy === 'Impact') return (IMPACT_MAP[b.Impact] || 0) - (IMPACT_MAP[a.Impact] || 0);
                 if (sortBy === 'id') return b.ID.localeCompare(a.ID);
                 return String(b[sortBy]).localeCompare(String(a[sortBy]));
             });
@@ -181,26 +185,26 @@
                 const bpIcons = (bug.Breakpoint || "").split(',').map(bp => ICONS[bp.trim()] || "").join('');
 
                 return `
-                    <div class="bug-row p-5 flex items-center gap-8 ${isSolved ? 'opacity-30' : ''}">
-                        <div class="w-3 h-3 rounded-full flex-shrink-0 ${dotClass}"></div>
+                    <div class="bug-row p-4 flex items-center gap-8 ${isSolved ? 'opacity-30' : ''}">
+                        <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotClass}"></div>
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-4 mb-2">
-                                <span class="mono text-[10px] font-bold text-slate-300 uppercase tracking-normal">${bug.ID}</span>
-                                ${isClient ? `<span class="bg-amber-100 text-amber-600 label-track px-2 py-0.5 rounded border border-amber-200">Client</span>` : ''}
-                                <span class="text-indigo-600 bg-indigo-50 label-track px-2 py-0.5 rounded">${bug.Location || 'GÉNÉRAL'}</span>
-                                <span class="text-[10px] text-slate-300 font-bold ml-auto">${formatDateTime(bug.Timestamp || bug.timestamp)}</span>
+                            <div class="flex items-center gap-4 mb-1">
+                                <span class="mono text-[9px] font-bold text-slate-300 uppercase">${bug.ID}</span>
+                                ${isClient ? `<span class="bg-amber-50 text-amber-600 text-[8px] font-bold px-1.5 py-0.5 rounded border border-amber-100 uppercase tracking-widest">Client</span>` : ''}
+                                <span class="text-indigo-600 bg-indigo-50 text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest">${bug.Location || 'GÉNÉRAL'}</span>
+                                <span class="text-[9px] text-slate-300 font-bold ml-auto">${formatDateTime(bug.Timestamp || bug.timestamp)}</span>
                             </div>
-                            <p class="text-sm font-medium text-slate-600 leading-tight truncate cursor-default" title="${bug.Note}">${bug.Note || 'Sans description'}</p>
+                            <p class="text-sm font-medium text-slate-500 leading-tight truncate cursor-default">${bug.Note || 'Sans note'}</p>
                         </div>
-                        <div class="flex items-center gap-12 flex-shrink-0">
-                            <div class="text-xl flex gap-6 opacity-60">${bpIcons}</div>
+                        <div class="flex items-center gap-16 flex-shrink-0">
+                            <div class="text-lg flex gap-5 opacity-60">${bpIcons}</div>
                             <div class="thumb-container">
-                                ${thumb ? `<img src="${thumb}" onclick="window.open('${bug['Screenshot URL']}', '_blank')" class="thumb-zoom shadow-sm">` : `<div class="w-full h-full rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] label-track text-slate-200">NONE</div>`}
+                                ${thumb ? `<img src="${thumb}" onclick="window.open('${bug['Screenshot URL']}', '_blank')" class="thumb-zoom shadow-sm">` : `<div class="w-full h-full rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[7px] font-bold text-slate-200">NONE</div>`}
                             </div>
                             <div class="flex gap-1">
-                                <button onclick="openEdit('${bug.ID}')" class="p-2 text-slate-200 hover:text-blue-500 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                                <button onclick="solveBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-green-500 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                                <button onclick="deleteBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-red-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                                <button onclick="openEdit('${bug.ID}')" class="p-2 text-slate-200 hover:text-blue-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2" stroke-linecap="round"/></svg></button>
+                                <button onclick="solveBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-green-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                                <button onclick="deleteBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-red-500 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round"/></svg></button>
                             </div>
                         </div>
                     </div>
@@ -208,7 +212,6 @@
             }).join('');
         }
 
-        // --- ACTIONS ---
         async function solveBug(id) {
             const bug = store.bugs.find(b => b.ID === id);
             if (bug) bug.State = "Solved";
@@ -217,7 +220,6 @@
         }
 
         async function deleteBug(id) {
-            // Suppression simplifiée sans popup confirm native pour éviter le blocage
             store.bugs = store.bugs.filter(b => b.ID !== id);
             renderBugList();
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete_bug", id: id }) });
@@ -249,36 +251,36 @@
             const priorities = store.config.priorities.map(p => `<option ${bug && bug.Priority === p ? 'selected' : ''}>${p}</option>`).join('');
             
             document.getElementById('formContent').innerHTML = `
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
-                        <label class="label-track text-slate-300">Impact</label>
-                        <select id="impactSelect" class="w-full border-2 p-4 rounded-2xl font-black text-[10px] bg-slate-50 outline-none">${impacts}</select>
+                        <label class="label-track">Impact</label>
+                        <select id="impactSelect" class="w-full border border-slate-200 p-3 rounded-xl font-bold text-[10px] bg-slate-50 outline-none">${impacts}</select>
                     </div>
                     <div class="space-y-1">
-                        <label class="label-track text-slate-300">Timing</label>
-                        <select id="prioritySelect" class="w-full border-2 p-4 rounded-2xl font-black text-[10px] bg-slate-50 outline-none">${priorities}</select>
+                        <label class="label-track">Timing</label>
+                        <select id="prioritySelect" class="w-full border border-slate-200 p-3 rounded-xl font-bold text-[10px] bg-slate-50 outline-none">${priorities}</select>
                     </div>
                 </div>
-                <div class="space-y-2">
-                    <label class="label-track text-slate-300">Zone</label>
-                    <div class="grid grid-cols-2 gap-3">${activeProject.composition.map(c => `
-                        <label class="flex items-center gap-3 p-4 border-2 rounded-2xl label-track cursor-pointer has-[:checked]:bg-indigo-50 transition-all">
-                            <input type="checkbox" name="location" value="${c}" class="w-4 h-4 text-[#6b3ce9]" ${bug && bug.Location.includes(c) ? 'checked' : ''}> ${c}
+                <div class="space-y-1.5">
+                    <label class="label-track">Zone</label>
+                    <div class="grid grid-cols-2 gap-2">${activeProject.composition.map(c => `
+                        <label class="flex items-center gap-2.5 p-3.5 border border-slate-100 rounded-xl text-[10px] font-bold uppercase tracking-widest cursor-pointer hover:bg-slate-50 has-[:checked]:bg-indigo-50 transition-all">
+                            <input type="checkbox" name="location" value="${c}" class="w-3.5 h-3.5 text-[#6b3ce9]" ${bug && bug.Location.includes(c) ? 'checked' : ''}> ${c}
                         </label>
                     `).join('')}</div>
                 </div>
-                <div class="space-y-2">
-                    <label class="label-track text-slate-300">Breakpoints</label>
-                    <div class="flex flex-wrap gap-3">${store.config.breakpoints.map(b => `
-                        <label class="flex items-center gap-3 p-4 border-2 rounded-2xl label-track cursor-pointer has-[:checked]:bg-black has-[:checked]:text-white transition-all">
+                <div class="space-y-1.5">
+                    <label class="label-track">Breakpoints</label>
+                    <div class="flex flex-wrap gap-2">${store.config.breakpoints.map(b => `
+                        <label class="flex items-center gap-2.5 p-3.5 border border-slate-100 rounded-xl text-[10px] font-bold uppercase tracking-widest cursor-pointer hover:bg-slate-50 has-[:checked]:bg-black has-[:checked]:text-white transition-all">
                             <input type="checkbox" name="breakpoint" value="${b}" class="hidden" ${bug && bug.Breakpoint.includes(b) ? 'checked' : ''}> ${ICONS[b] || ''} ${b}
                         </label>
                     `).join('')}</div>
                 </div>
-                <textarea id="bugNote" class="w-full border-2 p-6 rounded-[2rem] h-32 focus:border-[#6b3ce9] outline-none bg-slate-50 font-medium text-sm" placeholder="Détails du problème...">${bug ? bug.Note : ''}</textarea>
-                ${!bug ? `<div class="space-y-1"><label class="label-track text-slate-300">Capture</label><input type="file" id="screenshot" accept="image/*" class="w-full border-2 border-dashed p-6 rounded-2xl label-track"></div>` : ''}
-                <div class="flex gap-3">${["Client", "Collaborateur", "LTDA"].map(n => `
-                    <label class="flex-1 text-center p-4 border-2 rounded-2xl label-track cursor-pointer has-[:checked]:bg-[#6b3ce9] has-[:checked]:text-white transition-all">
+                <textarea id="bugNote" class="w-full border border-slate-200 p-5 rounded-2xl h-28 focus:border-[#6b3ce9] outline-none bg-slate-50 font-medium text-xs" placeholder="Détails du problème...">${bug ? bug.Note : ''}</textarea>
+                ${!bug ? `<div class="space-y-1"><label class="label-track">Capture</label><input type="file" id="screenshot" accept="image/*" class="w-full border border-slate-200 p-5 rounded-xl text-[9px] font-bold uppercase"></div>` : ''}
+                <div class="flex gap-2">${["Client", "Collaborateur", "LTDA"].map(n => `
+                    <label class="flex-1 text-center p-3.5 border border-slate-100 rounded-xl text-[9px] font-bold uppercase tracking-widest cursor-pointer has-[:checked]:bg-[#6b3ce9] has-[:checked]:text-white transition-all">
                         <input type="radio" name="noticedBy" value="${n}" class="hidden" required ${bug && bug['Noticed By'] === n ? 'checked' : (!bug && n === 'Collaborateur' ? 'checked' : '')}> ${n}
                     </label>
                 `).join('')}</div>
@@ -293,12 +295,13 @@
             const payload = {
                 action: editingId ? "edit_bug" : "log_bug",
                 id: editingId,
-                note: document.getElementById('bugNote').value,
-                location: Array.from(document.querySelectorAll('input[name="location"]:checked')).map(el => el.value).join(', '),
-                breakpoints: Array.from(document.querySelectorAll('input[name="breakpoint"]:checked')).map(el => el.value).join(', '),
-                impact: document.getElementById('impactSelect').value,
-                priority: document.getElementById('prioritySelect').value,
-                noticedBy: document.querySelector('input[name="noticedBy"]:checked').value,
+                Note: document.getElementById('bugNote').value,
+                Location: Array.from(document.querySelectorAll('input[name="location"]:checked')).map(el => el.value).join(', '),
+                Breakpoint: Array.from(document.querySelectorAll('input[name="breakpoint"]:checked')).map(el => el.value).join(', '),
+                Impact: document.getElementById('impactSelect').value,
+                Priority: document.getElementById('prioritySelect').value,
+                'Noticed By': document.querySelector('input[name="noticedBy"]:checked').value,
+                Project: activeProject.name, // Toujours nécessaire pour le filtrage local
             };
 
             if (!editingId) {
@@ -307,7 +310,8 @@
                     payload.imageBlob = await new Promise(r => { const reader = new FileReader(); reader.onload = () => r(reader.result); reader.readAsDataURL(fileInput.files[0]); });
                     payload.imageType = fileInput.files[0].type; payload.imageName = fileInput.files[0].name;
                 }
-                payload.client = activeProject.client; payload.project = activeProject.name;
+                payload.client = activeProject.client;
+                payload.project = activeProject.name; // Pour le backend
                 payload.dateNoticed = new Date().toLocaleDateString('fr-FR');
             }
 
