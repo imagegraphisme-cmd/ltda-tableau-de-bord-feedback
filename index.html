@@ -3,33 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LTDA Feedback Pro</title>
+    <title>LTDA Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .impact-vital { border-left: 12px solid #ef4444 !important; background: #fff1f2; }
         .impact-important { border-left: 12px solid #f97316 !important; background: #fff7ed; }
         .impact-ok { border-left: 12px solid #3b82f6 !important; background: #eff6ff; }
         .state-solved { opacity: 0.5; filter: grayscale(1); border-left: 12px solid #22c55e !important; }
-        #overlay { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 100; }
+        #overlay { transition: transform 0.4s ease-in-out; transform: translateX(100%); z-index: 100; }
         #overlay.active { transform: translateX(0); }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen font-sans text-slate-900">
+<body class="bg-slate-50 min-h-screen font-sans text-slate-900">
 
-    <div id="view-dashboard" class="pb-20">
+    <div id="view-landing" class="flex items-center justify-center min-h-screen p-6">
+        <div class="bg-white p-12 rounded-[3rem] shadow-2xl border border-slate-100 max-w-md w-full text-center space-y-8">
+            <h1 class="text-4xl font-black uppercase tracking-tighter text-blue-600 italic">LTDA</h1>
+            <select id="initialProjectSelect" class="w-full border-4 border-slate-50 rounded-3xl p-5 focus:border-blue-500 outline-none bg-slate-50 font-bold text-center text-lg appearance-none">
+                <option value="">Connexion au Google Sheet...</option>
+            </select>
+            <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-blue-600 text-white font-black py-6 rounded-3xl hover:bg-blue-700 transition-all opacity-50 cursor-not-allowed uppercase tracking-widest shadow-xl shadow-blue-100">
+                Accéder au suivi
+            </button>
+        </div>
+    </div>
+
+    <div id="view-dashboard" class="hidden">
         <header class="bg-white border-b border-slate-200 sticky top-0 z-30 p-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-2xl font-black uppercase tracking-tighter text-blue-600 italic">LTDA / <span id="currentProjectTitle" class="text-slate-900">Projet</span></h1>
-                <button onclick="location.reload()" class="text-[10px] font-black uppercase text-slate-400 hover:text-blue-600">← Changer de projet</button>
+                <h2 id="currentProjectTitle" class="text-2xl font-black uppercase tracking-tighter">Projet</h2>
+                <button onclick="location.reload()" class="text-[10px] text-blue-600 font-black uppercase tracking-widest hover:underline">← Changer de projet</button>
             </div>
-            
-            <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-2xl border border-slate-200">
-                <span class="text-[8px] font-black uppercase px-3 text-slate-400">Trier par :</span>
-                <select id="sortSelect" onchange="renderBugList()" class="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none pr-4 cursor-pointer">
-                    <option value="impact">Impact</option>
-                    <option value="state">État</option>
-                    <option value="priority">Échéance (Priority)</option>
+
+            <div class="flex items-center gap-3 bg-slate-100 p-2 rounded-2xl border border-slate-200">
+                <span class="text-[9px] font-black uppercase px-2 text-slate-400">Trier par :</span>
+                <select id="sortSelect" onchange="renderBugList()" class="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer">
+                    <option value="impact">Impact (Priorité haute)</option>
+                    <option value="priority">Échéance (When?)</option>
+                    <option value="state">État (Non résolus en haut)</option>
                     <option value="noticedBy">Constaté par</option>
+                    <option value="ID">Ordre Chronologique</option>
                 </select>
             </div>
 
@@ -38,73 +51,74 @@
             </button>
         </header>
 
-        <main class="max-w-5xl mx-auto p-6 md:p-10 space-y-4" id="bugListContainer">
-            <div class="text-center py-20 font-black text-slate-300 uppercase animate-pulse">Initialisation du Dashboard...</div>
-        </main>
+        <main class="max-w-4xl mx-auto p-6 md:p-10 space-y-4" id="bugListContainer">
+            </main>
     </div>
 
     <div id="overlay-bg" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] hidden opacity-0 transition-opacity" onclick="toggleOverlay(false)"></div>
-    <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-2xl bg-white shadow-2xl overflow-y-auto p-8 md:p-12">
+    <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white z-[100] shadow-2xl overflow-y-auto p-8 md:p-12">
         <div class="flex justify-between items-center mb-10">
-            <h2 class="text-4xl font-black uppercase tracking-tighter italic">Nouveau Retour</h2>
+            <h2 class="text-3xl font-black uppercase tracking-tighter">Nouveau Retour</h2>
             <button onclick="toggleOverlay(false)" class="text-slate-300 text-5xl hover:text-black">&times;</button>
         </div>
-        <form id="bugForm" class="space-y-10 pb-20">
-            <div id="formContent" class="space-y-10"></div>
-            <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-black py-7 rounded-[2rem] hover:bg-blue-700 shadow-2xl transition-all uppercase tracking-widest text-lg">
-                Enregistrer dans le tableau
+        <form id="bugForm" class="space-y-8 pb-10">
+            <div id="formContent" class="space-y-8"></div>
+            <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-black py-6 rounded-3xl hover:bg-blue-700 shadow-2xl transition-all uppercase tracking-widest">
+                Enregistrer l'observation
             </button>
         </form>
     </div>
 
-    <t>
-        const T_URL = "https://script.google.com/macros/s/AKfycbwZwfqSEos8tgh_d9K04mJ9zIhP2KW1cSiLxvpuartTHluArZa6dOALIEiyHcuXTya-/exec";
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZwfqSEos8tgh_d9K04mJ9zIhP2KW1cSiLxvpuartTHluArZa6dOALIEiyHcuXTya-/exec";
         let store = { projects: [], config: {}, bugs: [] };
         let activeProject = null;
 
-        const SCORES = {
-            impact: { "Vital": 4, "Important": 3, "OK": 2, "Optimisation": 1 },
-            state: { "Not solved": 2, "Solved": 1, "Obsolete": 0 }
-        };
-
-        // BREAKPOINT ICONS MAPPING
+        const IMPACT_MAP = { "Vital": 4, "Important": 3, "OK": 2, "Optimisation": 1 };
         const ICONS = {
             "Widescreen": "🖥️",
             "Desktop": "💻",
             "Tablet": "📟",
             "Mobile (L)": "📱",
-            "Mobile (V)": "🤳",
-            "Default": "🌐"
+            "Mobile (V)": "🤳"
         };
 
         async function init() {
             try {
                 const resp = await fetch(SCRIPT_URL);
                 store = await resp.json();
-                
-                // For simplicity in this demo, we auto-select the first project if only one exists
-                // or you can stay on a landing page. Here we force a "re-select" feel:
-                const select = document.createElement('select'); 
-                activeProject = store.projects[0]; // Logic placeholder
-                document.getElementById('currentProjectTitle').innerText = activeProject.name;
-                renderBugList();
+                const select = document.getElementById('initialProjectSelect');
+                select.innerHTML = '<option value="">Choisir un projet...</option>' + 
+                    store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
+                document.getElementById('btn-enter').disabled = false;
+                document.getElementById('btn-enter').classList.remove('opacity-50', 'cursor-not-allowed');
             } catch (err) { console.error(err); }
+        }
+
+        function enterDashboard() {
+            const pName = document.getElementById('initialProjectSelect').value;
+            if (!pName) return;
+            activeProject = store.projects.find(p => p.name === pName);
+            document.getElementById('view-landing').classList.add('hidden');
+            document.getElementById('view-dashboard').classList.remove('hidden');
+            document.getElementById('currentProjectTitle').innerText = activeProject.name;
+            renderBugList();
         }
 
         function renderBugList() {
             const container = document.getElementById('bugListContainer');
-            const criteria = document.getElementById('sortSelect').value;
+            const sortBy = document.getElementById('sortSelect').value;
             const projectBugs = (store.bugs || []).filter(b => b.Project === activeProject.name);
             
-            // DYNAMIC SORTING
+            // LOGIQUE DE TRI COMPLETE
             projectBugs.sort((a, b) => {
-                if (criteria === 'impact') return (SCORES.impact[b.Impact] || 0) - (SCORES.impact[a.Impact] || 0);
-                if (criteria === 'state') return (SCORES.state[b.State] || 0) - (SCORES.state[a.State] || 0);
-                return String(b[criteria]).localeCompare(String(a[criteria]));
+                if (sortBy === 'impact') return (IMPACT_MAP[b.Impact] || 0) - (IMPACT_MAP[a.Impact] || 0);
+                if (sortBy === 'state') return (a.State === 'Solved' ? 1 : -1);
+                return String(b[sortBy]).localeCompare(String(a[sortBy]));
             });
 
             if (projectBugs.length === 0) {
-                container.innerHTML = '<div class="text-center py-20 text-slate-300 font-black uppercase italic">Aucune donnée trouvée.</div>';
+                container.innerHTML = '<div class="text-center py-20 text-slate-300 italic font-bold">Aucune observation.</div>';
                 return;
             }
 
@@ -112,37 +126,32 @@
                 const isSolved = bug.State === 'Solved';
                 const impactClass = isSolved ? 'state-solved' : 'impact-' + (bug.Impact || "").toLowerCase().split(' ')[0];
                 
-                // Breakpoint Icons Logic
-                const bpArray = (bug.Breakpoint || "").split(',');
-                const iconsHtml = bpArray.map(bp => `<span title="${bp.trim()}" class="filter grayscale hover:grayscale-0 transition-all cursor-help">${ICONS[bp.trim()] || ICONS.Default}</span>`).join(' ');
+                // Génération des icônes de breakpoint
+                const bpIcons = (bug.Breakpoint || "").split(',').map(bp => ICONS[bp.trim()] || "🌐").join(' ');
 
                 return `
-                    <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8 flex justify-between items-start gap-6 transition-all hover:shadow-2xl ${impactClass}">
+                    <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8 flex justify-between items-start gap-6 transition-all hover:shadow-xl ${impactClass}">
                         <div class="flex-1 space-y-4">
                             <div class="flex items-center gap-4">
-                                <span class="px-3 py-1 rounded-full bg-slate-900 text-white text-[9px] font-black uppercase">${bug.ID}</span>
-                                <div class="flex gap-1 text-lg">${iconsHtml}</div>
-                                <span class="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">${bug.Location || 'Général'}</span>
+                                <span class="px-3 py-1 rounded-full bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest">${bug.ID}</span>
+                                <span class="text-lg" title="${bug.Breakpoint}">${bpIcons}</span>
+                                <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">${bug.Location}</span>
                             </div>
-                            
-                            <p class="text-slate-900 font-bold text-2xl leading-tight">${bug.Note || 'Sans note'}</p>
-                            
+                            <p class="text-slate-900 font-bold text-xl leading-tight">${bug.Note || 'Sans note'}</p>
                             <details class="group">
-                                <summary class="list-none text-[10px] font-black text-slate-300 uppercase cursor-pointer hover:text-blue-600 tracking-widest outline-none">Détails de l'observation +</summary>
-                                <div class="pt-6 grid grid-cols-2 md:grid-cols-3 gap-6 border-t mt-6 border-slate-50 text-xs">
-                                    <div><span class="text-slate-400 font-bold uppercase block text-[8px] mb-1">Impact</span>${bug.Impact}</div>
-                                    <div><span class="text-slate-400 font-bold uppercase block text-[8px] mb-1">Priorité / Échéance</span>${bug.Priority}</div>
-                                    <div><span class="text-slate-400 font-bold uppercase block text-[8px] mb-1">Constaté par</span>${bug['Noticed By']}</div>
-                                    <div><span class="text-slate-400 font-bold uppercase block text-[8px] mb-1">Date</span>${bug['Date Noticed']}</div>
-                                    <div class="col-span-2 italic text-slate-400 mt-2">ID Technique: ${bug.ID}</div>
+                                <summary class="list-none text-[10px] font-black text-slate-300 uppercase cursor-pointer hover:text-blue-600 tracking-widest outline-none">Plus d'infos +</summary>
+                                <div class="pt-6 grid grid-cols-2 gap-6 border-t mt-6 border-slate-50 text-[10px] uppercase font-bold tracking-tight">
+                                    <div><span class="text-slate-400 block text-[8px] mb-1">Impact</span>${bug.Impact}</div>
+                                    <div><span class="text-slate-400 block text-[8px] mb-1">Priorité / Échéance</span>${bug.Priority}</div>
+                                    <div><span class="text-slate-400 block text-[8px] mb-1">Constaté par</span>${bug['Noticed By']}</div>
+                                    <div><span class="text-slate-400 block text-[8px] mb-1">Date Noticed</span>${bug['Date Noticed']}</div>
                                 </div>
                             </details>
                         </div>
-
-                        <div class="flex flex-col gap-4 items-end">
-                            ${!isSolved ? `<button onclick="solveBug('${bug.ID}')" class="bg-green-500 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-green-100 hover:scale-105 transition-all">Fixé</button>` : ''}
+                        <div class="flex flex-col gap-3 items-end">
+                            ${!isSolved ? `<button onclick="solveBug('${bug.ID}')" class="bg-green-500 text-white px-5 py-2 rounded-2xl text-[10px] font-black uppercase hover:bg-green-600 transition-all shadow-lg shadow-green-100">Fixé</button>` : '<span class="text-green-600 font-black uppercase text-[10px]">Résolu</span>'}
                             ${bug['Screenshot URL'] && bug['Screenshot URL'] !== 'No Image' ? `
-                                <a href="${bug['Screenshot URL']}" target="_blank" class="w-24 h-24 rounded-[2rem] overflow-hidden border-4 border-white shadow-xl block hover:rotate-2 transition-transform">
+                                <a href="${bug['Screenshot URL']}" target="_blank" class="w-16 h-16 rounded-2xl overflow-hidden border border-slate-100 block hover:scale-110 transition-transform">
                                     <img src="${bug['Screenshot URL']}" class="w-full h-full object-cover">
                                 </a>
                             ` : ''}
@@ -174,62 +183,54 @@
 
         function renderFormFields() {
             document.getElementById('formContent').innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="space-y-3">
-                        <label class="text-[11px] font-black uppercase text-slate-400 tracking-widest">💥 Niveau d'Impact</label>
-                        <select id="impactSelect" class="w-full border-4 border-slate-50 p-5 rounded-2xl font-bold bg-slate-50 outline-none focus:border-blue-500 transition-all">${store.config.impacts.map(i => `<option>${i}</option>`).join('')}</select>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Niveau d'Impact</label>
+                        <select id="impactSelect" class="w-full border-2 border-slate-100 p-4 rounded-xl font-bold bg-slate-50 outline-none focus:border-blue-500">${store.config.impacts.map(i => `<option>${i}</option>`).join('')}</select>
                     </div>
-                    <div class="space-y-3">
-                        <label class="text-[11px] font-black uppercase text-slate-400 tracking-widest">⏳ Échéance (Priorité)</label>
-                        <select id="prioritySelect" class="w-full border-4 border-slate-50 p-5 rounded-2xl font-bold bg-slate-50 outline-none focus:border-blue-500 transition-all">${store.config.priorities.map(p => `<option>${p}</option>`).join('')}</select>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Priorité / Échéance</label>
+                        <select id="prioritySelect" class="w-full border-2 border-slate-100 p-4 rounded-xl font-bold bg-slate-50 outline-none focus:border-blue-500">${store.config.priorities.map(p => `<option>${p}</option>`).join('')}</select>
                     </div>
                 </div>
 
-                <div class="space-y-3">
-                    <label class="text-[11px] font-black uppercase text-slate-400 tracking-widest">📍 Zone du projet</label>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">${activeProject.composition.map(c => `
-                        <label class="flex items-center gap-2 p-4 border-2 border-slate-100 rounded-2xl text-xs font-bold cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200 transition-all">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Zone du projet</label>
+                    <div class="grid grid-cols-2 gap-2">${activeProject.composition.map(c => `
+                        <label class="flex items-center gap-2 p-3 border-2 border-slate-100 rounded-xl text-xs font-bold cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
                             <input type="checkbox" name="location" value="${c}" class="w-4 h-4 text-blue-600"> ${c}
                         </label>
                     `).join('')}</div>
                 </div>
 
-                <div class="space-y-3">
-                    <label class="text-[11px] font-black uppercase text-slate-400 tracking-widest">📏 Breakpoints concernés</label>
-                    <div class="flex flex-wrap gap-3">${store.config.breakpoints.map(b => `
-                        <label class="flex items-center gap-2 p-3 border-2 border-slate-100 rounded-2xl text-[10px] font-black uppercase cursor-pointer hover:bg-slate-50 has-[:checked]:bg-slate-900 has-[:checked]:text-white transition-all">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Breakpoints concernés</label>
+                    <div class="flex flex-wrap gap-2">${store.config.breakpoints.map(b => `
+                        <label class="flex items-center gap-2 p-3 border-2 border-slate-100 rounded-xl text-[10px] font-black uppercase cursor-pointer hover:bg-slate-50 has-[:checked]:bg-slate-900 has-[:checked]:text-white">
                             <input type="checkbox" name="breakpoint" value="${b}" class="hidden"> ${ICONS[b] || ''} ${b}
                         </label>
                     `).join('')}</div>
                 </div>
 
-                <div class="space-y-3">
-                    <label class="text-[11px] font-black uppercase text-slate-400 tracking-widest">📝 Observation / Note</label>
-                    <textarea id="bugNote" class="w-full border-4 border-slate-50 p-6 rounded-[2.5rem] h-40 outline-none focus:border-blue-500 bg-slate-50 transition-all font-medium" placeholder="Décrivez précisément le problème..."></textarea>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Note / Observation</label>
+                    <textarea id="bugNote" class="w-full border-2 border-slate-100 p-5 rounded-[2rem] h-32 outline-none focus:border-blue-500 bg-slate-50" placeholder="Décrivez le problème..."></textarea>
                 </div>
 
-                <div class="space-y-3">
-                    <label class="text-[11px] font-black uppercase text-slate-400 tracking-widest">📸 Capture d'écran (Image)</label>
-                    <div class="border-4 border-dashed border-slate-100 rounded-[2rem] p-10 text-center relative hover:bg-slate-50 transition-colors">
-                        <input type="file" id="screenshot" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
-                        <p class="text-slate-400 font-bold text-sm">Cliquer pour choisir un fichier ou glisser l'image ici</p>
-                        <p id="fileName" class="text-blue-600 font-black text-xs mt-2 uppercase"></p>
-                    </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Capture d'écran</label>
+                    <input type="file" id="screenshot" accept="image/*" class="w-full border-2 border-dashed border-slate-200 p-8 rounded-2xl text-xs">
                 </div>
 
-                <div class="space-y-3">
-                    <label class="text-[11px] font-black uppercase text-slate-400 tracking-widest">👤 Constaté par</label>
-                    <div class="flex gap-4">${["Client", "Collaborateur", "LTDA"].map(n => `
-                        <label class="flex-1 text-center p-4 border-2 border-slate-100 rounded-2xl text-xs font-bold cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-600 has-[:checked]:text-white transition-all">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Constaté par</label>
+                    <div class="flex gap-2">${["Client", "Collaborateur", "LTDA"].map(n => `
+                        <label class="flex-1 text-center p-3 border-2 border-slate-100 rounded-xl text-[10px] font-black uppercase cursor-pointer has-[:checked]:bg-blue-600 has-[:checked]:text-white">
                             <input type="radio" name="noticedBy" value="${n}" class="hidden" required> ${n}
                         </label>
                     `).join('')}</div>
                 </div>
             `;
-
-            document.getElementById('screenshot').onchange = e => {
-                document.getElementById('fileName').innerText = e.target.files[0]?.name || "";
-            };
         }
 
         document.getElementById('bugForm').onsubmit = async (e) => {
@@ -237,20 +238,14 @@
             const btn = document.getElementById('submitBtn');
             const fileInput = document.getElementById('screenshot');
             btn.disabled = true;
-            btn.innerText = "Synchronisation avec Google...";
+            btn.innerText = "Synchronisation...";
 
             let imageBlob = null;
-            let imageType = "";
-            let imageName = "";
-
             if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                imageName = file.name;
-                imageType = file.type;
                 imageBlob = await new Promise(r => {
                     const reader = new FileReader();
                     reader.onload = () => r(reader.result);
-                    reader.readAsDataURL(file);
+                    reader.readAsDataURL(fileInput.files[0]);
                 });
             }
 
@@ -266,13 +261,12 @@
                 note: document.getElementById('bugNote').value,
                 noticedBy: document.querySelector('input[name="noticedBy"]:checked').value,
                 imageBlob: imageBlob,
-                imageType: imageType,
-                imageName: imageName
+                imageType: fileInput.files[0]?.type,
+                imageName: fileInput.files[0]?.name
             };
 
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
             
-            // UI Update
             store.bugs.unshift({ ...payload, ID: "LTDA-NEW", State: "Not solved", 'Date Noticed': payload.dateNoticed });
             toggleOverlay(false);
             renderBugList();
