@@ -6,78 +6,110 @@
     <title>LTDA Dashboard PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono&display=swap');
+        
+        /* Reset de l'italique et typo */
+        * { font-family: 'Inter', sans-serif; font-style: normal !important; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         
+        /* Couleurs Impact */
         .dot-vital { background-color: #ef4444; }
-        .dot-important { background-color: #f97316; }
+        .dot-important { background-color: #f59e0b; }
         .dot-ok { background-color: #3b82f6; }
-        .dot-solved { background-color: #22c55e; }
+        .dot-solved { background-color: #10b981; }
 
-        .bug-row { border-bottom: 1px solid #f1f5f9; transition: all 0.2s; }
-        .bug-row:hover { background-color: #f1f5f9; transform: translateX(4px); }
+        /* Lignes compactes */
+        .bug-row { border-bottom: 1px solid #f1f5f9; transition: all 0.1s ease; }
+        .bug-row:hover { background-color: #f8fafc; }
         
-        .tab-active { background-color: #eff6ff; color: #2563eb; border-right: 4px solid #2563eb; }
+        /* Sidebar active state */
+        .tab-active { background-color: #f1f5f9; color: #000; font-weight: 900; border-left: 4px solid #6b3ce9; }
         
-        #overlay { transition: transform 0.3s ease-in-out; transform: translateX(100%); z-index: 200; }
+        #overlay { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 200; }
         #overlay.active { transform: translateX(0); }
+
+        /* Landing Animation */
+        .landing-card { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="min-h-screen text-slate-900">
+<body class="bg-white text-slate-900 overflow-x-hidden">
 
-    <div id="view-landing" class="fixed inset-0 z-[300] flex items-center justify-center bg-slate-50 p-6">
-        <div class="bg-white p-12 rounded-[2rem] shadow-2xl max-w-md w-full text-center space-y-8 border border-slate-200">
-            <h1 class="text-4xl font-black uppercase tracking-tighter text-blue-600 italic">LTDA</h1>
-            <select id="initialProjectSelect" class="w-full border-2 border-slate-100 rounded-2xl p-4 focus:border-blue-500 outline-none font-bold bg-slate-50 appearance-none text-center">
-                <option value="">Connexion au serveur...</option>
-            </select>
-            <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-700 transition-all opacity-50 cursor-not-allowed uppercase tracking-widest shadow-xl">Entrer</button>
+    <div id="view-landing" class="fixed inset-0 z-[300] flex items-center justify-center bg-[#fdfdff] p-6">
+        <div class="landing-card bg-white p-10 md:p-16 rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.06)] max-w-md w-full text-center space-y-12 border border-slate-50">
+            
+            <div class="flex justify-center scale-110">
+                <img src="Plan de travail 1.svg" alt="LTDA Logo" style="height: 120px; width: auto;" onerror="this.style.display='none'">
+            </div>
+
+            <div class="space-y-3">
+                <h1 class="text-3xl font-[900] uppercase tracking-tight text-slate-900">Feedback Hub</h1>
+                <p class="text-slate-400 text-sm font-medium">Plateforme de suivi de production</p>
+            </div>
+
+            <div class="space-y-4">
+                <select id="initialProjectSelect" class="w-full border-2 border-slate-100 rounded-2xl p-5 focus:border-[#6b3ce9] outline-none font-bold bg-slate-50 appearance-none text-center cursor-pointer transition-all">
+                    <option value="">Chargement...</option>
+                </select>
+                <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-[#6b3ce9] text-white font-black py-5 rounded-2xl hover:bg-black transition-all opacity-50 cursor-not-allowed uppercase tracking-widest shadow-xl">
+                    Ouvrir le projet
+                </button>
+            </div>
         </div>
     </div>
 
     <div id="view-dashboard" class="hidden flex flex-col min-h-screen">
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 p-4 md:px-8 flex justify-between items-center h-16">
-            <div class="flex items-center gap-4">
-                <h2 id="currentProjectTitle" class="text-lg font-black uppercase tracking-tighter italic">Projet</h2>
-                <button onclick="location.reload()" class="text-[9px] font-black uppercase text-slate-400 hover:text-blue-600">← Changer</button>
+        <header class="bg-white border-b border-slate-100 sticky top-0 z-30 px-8 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-8">
+                <div class="flex items-center gap-3">
+                    <img src="Plan de travail 1.svg" style="height: 40px;" alt="">
+                    <h2 id="currentProjectTitle" class="text-xl font-black uppercase tracking-tight">Projet</h2>
+                </div>
+                <nav class="hidden md:flex gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                    <select id="sortSelect" onchange="renderBugList()" class="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none px-4 cursor-pointer">
+                        <option value="id">Ordre Chrono</option>
+                        <option value="impact">Par Impact</option>
+                        <option value="state">Par État</option>
+                    </select>
+                </nav>
             </div>
-            <button onclick="toggleOverlay(true)" class="bg-blue-600 text-white px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all">+ Nouveau Retour</button>
+            <div class="flex items-center gap-6">
+                <button onclick="location.reload()" class="text-[10px] font-bold uppercase text-slate-300 hover:text-black tracking-widest transition-colors">Changer</button>
+                <button onclick="toggleOverlay(true)" class="bg-[#6b3ce9] text-white px-8 py-3 rounded-full font-black text-[11px] uppercase tracking-widest hover:bg-black transition-all shadow-lg">+ Observation</button>
+            </div>
         </header>
 
         <div class="flex flex-1">
-            <aside class="w-64 bg-white border-r border-slate-200 sticky top-16 h-[calc(100vh-4rem)] p-4 hidden md:block">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 px-4">Breakpoints</p>
+            <aside class="w-64 bg-white border-r border-slate-100 sticky top-20 h-[calc(100vh-5rem)] p-6 hidden md:block">
+                <p class="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-8 px-4">Breakpoints</p>
                 <nav id="breakpointTabs" class="space-y-1">
-                    <button onclick="filterByBreakpoint('all')" class="w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all tab-active" id="tab-all">Toutes les vues</button>
-                    </nav>
-                
-                <div class="mt-10 pt-10 border-t border-slate-100">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-4">Tri</p>
-                    <select id="sortSelect" onchange="renderBugList()" class="w-full bg-slate-50 border-0 rounded-xl p-3 text-xs font-bold outline-none">
-                        <option value="ID">Chronologique</option>
-                        <option value="impact">Par Impact</option>
-                        <option value="State">Par État</option>
-                    </select>
-                </div>
+                    <button onclick="filterByBreakpoint('all')" class="w-full text-left px-5 py-4 rounded-xl text-xs font-black transition-all tab-active" id="tab-all">TOUTES LES VUES</button>
+                </nav>
             </aside>
 
             <main class="flex-1 bg-white">
-                <div id="bugListContainer" class="flex flex-col">
-                    </div>
+                <div id="bugListContainer" class="flex flex-col"></div>
             </main>
         </div>
     </div>
 
-    <div id="overlay-bg" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] hidden opacity-0 transition-opacity" onclick="toggleOverlay(false)"></div>
-    <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white z-[200] shadow-2xl overflow-y-auto p-8 md:p-12">
-        <div class="flex justify-between items-center mb-10">
-            <h2 class="text-3xl font-black uppercase tracking-tighter italic">Nouveau Rapport</h2>
-            <button onclick="toggleOverlay(false)" class="text-slate-300 text-4xl hover:text-black">&times;</button>
+    <div id="overlay-bg" class="fixed inset-0 bg-slate-900/10 backdrop-blur-md z-[150] hidden opacity-0 transition-opacity" onclick="toggleOverlay(false)"></div>
+    <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white z-[200] shadow-2xl overflow-y-auto p-12">
+        <div class="flex justify-between items-center mb-12">
+            <h2 class="text-3xl font-black uppercase tracking-tight">Rapport</h2>
+            <button onclick="toggleOverlay(false)" class="text-slate-200 text-5xl hover:text-black">&times;</button>
         </div>
-        <form id="bugForm" class="space-y-6 pb-10">
-            <div id="formContent" class="space-y-6"></div>
-            <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-700 shadow-xl transition-all uppercase tracking-widest">Envoyer à l'équipe</button>
+        <form id="bugForm" class="space-y-8 pb-10">
+            <div id="formContent" class="space-y-8"></div>
+            <button type="submit" id="submitBtn" class="w-full bg-[#6b3ce9] text-white font-black py-6 rounded-3xl hover:bg-black transition-all uppercase tracking-widest shadow-xl">Confirmer l'envoi</button>
         </form>
     </div>
 
@@ -88,14 +120,27 @@
         let currentFilter = 'all';
 
         const IMPACT_MAP = { "Vital": 4, "Important": 3, "OK": 2, "Optimisation": 1 };
-        const ICONS = { "Widescreen": "🖥️", "Desktop": "💻", "Tablet": "📟", "Mobile (L)": "📱", "Mobile (V)": "🤳" };
+        const ICONS = { "Widescreen": "🖥️", "Desktop": "💻", "Tablet": "📟", "Mobile (L)": "📱", "Mobile": "🤳" };
+
+        // Formatteur de date robuste
+        function formatDateTime(str) {
+            if (!str || str === "undefined") return "--/--";
+            try {
+                const d = new Date(str);
+                if (isNaN(d.getTime())) return str; // Si c'est déjà formaté
+                return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}) + " " + 
+                       d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+            } catch(e) { return str; }
+        }
 
         function getDriveThumb(url) {
             if (!url || url === "No Image") return null;
             let id = "";
-            if (url.includes('id=')) id = url.split('id=')[1].split('&')[0];
-            else if (url.includes('/d/')) id = url.split('/d/')[1].split('/')[0];
-            return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w200` : null;
+            try {
+                if (url.includes('id=')) id = url.split('id=')[1].split('&')[0];
+                else if (url.includes('/d/')) id = url.split('/d/')[1].split('/')[0];
+                return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w200` : null;
+            } catch(e) { return null; }
         }
 
         async function init() {
@@ -105,25 +150,26 @@
                 const select = document.getElementById('initialProjectSelect');
                 select.innerHTML = '<option value="">Choisir Projet...</option>' + 
                     store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
-                document.getElementById('btn-enter').disabled = false;
-                document.getElementById('btn-enter').classList.remove('opacity-50', 'cursor-not-allowed');
                 
-                // Générer les tabs de breakpoints
+                // Sidebar breakpoints
                 const tabs = document.getElementById('breakpointTabs');
                 store.config.breakpoints.forEach(bp => {
                     const btn = document.createElement('button');
-                    btn.className = "w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all text-slate-500 hover:bg-slate-50";
+                    btn.className = "w-full text-left px-5 py-4 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-50 transition-all uppercase";
                     btn.id = `tab-${bp}`;
                     btn.innerHTML = `${ICONS[bp] || '🌐'} ${bp}`;
                     btn.onclick = () => filterByBreakpoint(bp);
                     tabs.appendChild(btn);
                 });
+
+                document.getElementById('btn-enter').disabled = false;
+                document.getElementById('btn-enter').classList.remove('opacity-50', 'cursor-not-allowed');
             } catch (err) { console.error(err); }
         }
 
         function filterByBreakpoint(bp) {
             currentFilter = bp;
-            document.querySelectorAll('#breakpointTabs button').forEach(b => b.classList.remove('tab-active'));
+            document.querySelectorAll('#breakpointTabs button').forEach(b => b.classList.remove('tab-active', 'text-slate-900', 'font-black'));
             document.getElementById(`tab-${bp}`).classList.add('tab-active');
             renderBugList();
         }
@@ -132,7 +178,7 @@
             const pName = document.getElementById('initialProjectSelect').value;
             if (!pName) return;
             activeProject = store.projects.find(p => p.name === pName);
-            document.getElementById('view-landing').classList.add('hidden');
+            document.getElementById('view-landing').style.display = 'none';
             document.getElementById('view-dashboard').classList.remove('hidden');
             document.getElementById('currentProjectTitle').innerText = activeProject.name;
             renderBugList();
@@ -141,17 +187,15 @@
         function renderBugList() {
             const container = document.getElementById('bugListContainer');
             const sortBy = document.getElementById('sortSelect').value;
-            
-            // Filtrage par projet ET par breakpoint (si sélectionné)
             let projectBugs = (store.bugs || []).filter(b => b.Project === activeProject.name);
+            
             if (currentFilter !== 'all') {
                 projectBugs = projectBugs.filter(b => b.Breakpoint && b.Breakpoint.includes(currentFilter));
             }
             
-            // Tri Chronologique par défaut (Basé sur l'ID car reverse est déjà fait par le script)
             projectBugs.sort((a, b) => {
                 if (sortBy === 'impact') return (IMPACT_MAP[b.Impact] || 0) - (IMPACT_MAP[a.Impact] || 0);
-                if (sortBy === 'ID') return b.ID.localeCompare(a.ID);
+                if (sortBy === 'id') return b.ID.localeCompare(a.ID);
                 return String(b[sortBy]).localeCompare(String(a[sortBy]));
             });
 
@@ -160,31 +204,29 @@
                 const dotClass = isSolved ? 'dot-solved' : 'dot-' + (bug.Impact || "ok").toLowerCase().split(' ')[0];
                 const thumb = getDriveThumb(bug['Screenshot URL']);
                 const bpIcons = (bug.Breakpoint || "").split(',').map(bp => ICONS[bp.trim()] || "").join('');
-                
-                // On sécurise l'affichage de l'heure
-                const timeDisplay = bug.Timestamp || bug.timestamp || "--:--";
+                const timestamp = bug.Timestamp || bug.timestamp;
 
                 return `
-                    <div class="bug-row p-4 flex items-center gap-5 ${isSolved ? 'opacity-40 grayscale' : ''}">
-                        <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotClass}"></div>
+                    <div class="bug-row p-5 flex items-center gap-6 ${isSolved ? 'opacity-30' : ''}">
+                        <div class="w-3 h-3 rounded-full flex-shrink-0 ${dotClass}"></div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-3 mb-1">
-                                <span class="mono text-[10px] font-bold text-slate-400 uppercase">${bug.ID}</span>
-                                <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded uppercase tracking-tighter">${bug.Location}</span>
-                                <span class="text-[10px] text-slate-400 font-bold ml-auto">${timeDisplay}</span>
+                                <span class="mono text-[10px] font-bold text-slate-300 uppercase">${bug.ID}</span>
+                                <span class="text-[10px] font-black text-[#6b3ce9] bg-indigo-50 px-2 py-0.5 rounded uppercase">${bug.Location || 'GÉNÉRAL'}</span>
+                                <span class="text-[10px] text-slate-300 font-bold ml-auto">${formatDateTime(timestamp)}</span>
                             </div>
-                            <p class="text-sm font-bold text-slate-700 leading-tight truncate" title="${bug.Note}">${bug.Note || 'Sans description'}</p>
+                            <p class="text-sm font-bold text-slate-800 leading-tight truncate cursor-default" title="${bug.Note}">${bug.Note || 'Sans description'}</p>
                         </div>
-                        <div class="flex items-center gap-4 flex-shrink-0">
-                            <div class="text-lg flex gap-1 opacity-80">${bpIcons}</div>
+                        <div class="flex items-center gap-6 flex-shrink-0">
+                            <div class="text-xl flex gap-1 opacity-60">${bpIcons}</div>
                             ${thumb ? `
-                                <a href="${bug['Screenshot URL']}" target="_blank" class="w-10 h-10 rounded-lg overflow-hidden border border-slate-200 hover:scale-110 transition-all">
+                                <a href="${bug['Screenshot URL']}" target="_blank" class="w-12 h-12 rounded-xl overflow-hidden border border-slate-100 hover:scale-105 transition-all block">
                                     <img src="${thumb}" class="w-full h-full object-cover">
                                 </a>
-                            ` : `<div class="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[10px] text-slate-300">∅</div>`}
-                            <div class="flex gap-1">
-                                <button onclick="solveBug('${bug.ID}')" class="p-2 text-slate-300 hover:text-green-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                                <button onclick="deleteBug('${bug.ID}')" class="p-2 text-slate-300 hover:text-red-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                            ` : `<div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[10px] text-slate-200 uppercase font-black">∅</div>`}
+                            <div class="flex gap-2">
+                                <button onclick="solveBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-green-500 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                                <button onclick="deleteBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-red-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                             </div>
                         </div>
                     </div>
@@ -221,39 +263,39 @@
 
         function renderFormFields() {
             document.getElementById('formContent').innerHTML = `
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-6">
                     <div class="space-y-1">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Impact</label>
-                        <select id="impactSelect" class="w-full border-2 p-3 rounded-xl font-bold bg-slate-50">${store.config.impacts.map(i => `<option>${i}</option>`).join('')}</select>
+                        <label class="text-[10px] font-black uppercase text-slate-300 tracking-widest">Impact</label>
+                        <select id="impactSelect" class="w-full border-2 p-4 rounded-2xl font-bold bg-slate-50 focus:border-[#6b3ce9] outline-none">${store.config.impacts.map(i => `<option>${i}</option>`).join('')}</select>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Priorité</label>
-                        <select id="prioritySelect" class="w-full border-2 p-3 rounded-xl font-bold bg-slate-50">${store.config.priorities.map(p => `<option>${p}</option>`).join('')}</select>
+                        <label class="text-[10px] font-black uppercase text-slate-300 tracking-widest">Timing</label>
+                        <select id="prioritySelect" class="w-full border-2 p-4 rounded-2xl font-bold bg-slate-50 focus:border-[#6b3ce9] outline-none">${store.config.priorities.map(p => `<option>${p}</option>`).join('')}</select>
                     </div>
                 </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black uppercase text-slate-400">Zone</label>
-                    <div class="grid grid-cols-2 gap-2">${activeProject.composition.map(c => `
-                        <label class="flex items-center gap-2 p-2.5 border-2 rounded-xl text-xs font-bold cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50">
-                            <input type="checkbox" name="location" value="${c}" class="w-4 h-4 text-blue-600"> ${c}
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-300 tracking-widest">Zone</label>
+                    <div class="grid grid-cols-2 gap-3">${activeProject.composition.map(c => `
+                        <label class="flex items-center gap-3 p-4 border-2 rounded-2xl text-xs font-black cursor-pointer hover:bg-slate-50 has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-200 transition-all">
+                            <input type="checkbox" name="location" value="${c}" class="w-4 h-4 text-[#6b3ce9]"> ${c}
                         </label>
                     `).join('')}</div>
                 </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black uppercase text-slate-400">Breakpoints</label>
-                    <div class="flex flex-wrap gap-2">${store.config.breakpoints.map(b => `
-                        <label class="flex items-center gap-2 p-2 border-2 rounded-xl text-[10px] font-black uppercase cursor-pointer hover:bg-slate-50 has-[:checked]:bg-slate-900 has-[:checked]:text-white transition-all">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-300 tracking-widest">Breakpoints</label>
+                    <div class="flex flex-wrap gap-3">${store.config.breakpoints.map(b => `
+                        <label class="flex items-center gap-3 p-4 border-2 rounded-2xl text-[10px] font-black uppercase cursor-pointer hover:bg-slate-50 has-[:checked]:bg-black has-[:checked]:text-white transition-all">
                             <input type="checkbox" name="breakpoint" value="${b}" class="hidden"> ${ICONS[b] || ''} ${b}
                         </label>
                     `).join('')}</div>
                 </div>
-                <textarea id="bugNote" class="w-full border-2 p-4 rounded-2xl h-24 focus:border-blue-500 outline-none bg-slate-50 font-medium" placeholder="Détails du problème..."></textarea>
+                <textarea id="bugNote" class="w-full border-2 p-6 rounded-[2rem] h-32 focus:border-[#6b3ce9] outline-none bg-slate-50 font-medium" placeholder="Description du problème..."></textarea>
                 <div class="space-y-1">
-                    <label class="text-[10px] font-black uppercase text-slate-400">Capture</label>
-                    <input type="file" id="screenshot" accept="image/*" class="w-full border-2 border-dashed p-4 rounded-xl text-xs">
+                    <label class="text-[10px] font-black uppercase text-slate-300 tracking-widest">Capture</label>
+                    <input type="file" id="screenshot" accept="image/*" class="w-full border-2 border-dashed p-6 rounded-2xl text-xs">
                 </div>
-                <div class="flex gap-2">${["Client", "Collaborateur", "LTDA"].map(n => `
-                    <label class="flex-1 text-center p-3 border-2 rounded-xl text-[10px] font-black uppercase cursor-pointer has-[:checked]:bg-blue-600 has-[:checked]:text-white transition-all">
+                <div class="flex gap-3">${["Client", "Collaborateur", "LTDA"].map(n => `
+                    <label class="flex-1 text-center p-4 border-2 rounded-2xl text-[10px] font-black uppercase cursor-pointer has-[:checked]:bg-[#6b3ce9] has-[:checked]:text-white transition-all">
                         <input type="radio" name="noticedBy" value="${n}" class="hidden" required> ${n}
                     </label>
                 `).join('')}</div>
@@ -267,9 +309,7 @@
             btn.disabled = true;
             btn.innerText = "Synchronisation...";
 
-            const dateStr = new Date().toLocaleDateString('fr-FR');
-            const timeStr = new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
-            
+            const now = new Date();
             const tempBug = {
                 ID: "LTDA-...",
                 Project: activeProject.name,
@@ -278,7 +318,7 @@
                 Breakpoint: Array.from(document.querySelectorAll('input[name="breakpoint"]:checked')).map(el => el.value).join(', '),
                 Impact: document.getElementById('impactSelect').value,
                 Priority: document.getElementById('prioritySelect').value,
-                Timestamp: timeStr,
+                Timestamp: now.toISOString(),
                 "Noticed By": document.querySelector('input[name="noticedBy"]:checked').value,
                 State: "Not solved"
             };
@@ -298,7 +338,7 @@
 
             const payload = {
                 action: "log_bug",
-                dateNoticed: dateStr,
+                dateNoticed: now.toLocaleDateString('fr-FR'),
                 client: activeProject.client, project: activeProject.name,
                 impact: tempBug.Impact, priority: tempBug.Priority,
                 location: tempBug.Location, breakpoints: tempBug.Breakpoint,
