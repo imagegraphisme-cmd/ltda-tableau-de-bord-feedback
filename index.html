@@ -3,39 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Suivi Web</title>
+    <title>Dashboard Suivi Web (Agence)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap');
         
-        /* Reset Italique & Typo */
+        /* Reset global pour un look propre et sans italique */
         * { font-family: 'Inter', sans-serif; font-style: normal !important; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         
-        /* Kerning & Poids visuel */
+        /* Kerning : Interlettrage large uniquement pour les labels */
         .label-track { text-transform: uppercase; letter-spacing: 0.15em; font-size: 9px; font-weight: 800; color: #94a3b8; }
         .title-track { letter-spacing: -0.04em; font-weight: 800; }
 
-        /* Couleurs Impact */
+        /* Couleurs d'impact LTDA */
         .dot-vital { background-color: #ef4444; }
         .dot-important { background-color: #f59e0b; }
         .dot-ok { background-color: #3b82f6; }
         .dot-solved { background-color: #10b981; }
 
-        /* Rows */
+        /* Styles de la liste */
         .bug-row { border-bottom: 1px solid #f1f5f9; transition: background 0.1s; }
         .bug-row:hover { background-color: #f8fafc; }
         
+        /* État actif de la sidebar */
         .tab-active { background-color: #f8fafc; color: #6432c9; font-weight: 800; border-left: 3px solid #6432c9; }
         
+        /* Overlay de création/édition */
         #overlay { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 200; }
         #overlay.active { transform: translateX(0); }
 
-        /* Mega Zoom */
+        /* Méga Zoom au survol des images */
         .thumb-container { position: relative; width: 44px; height: 44px; }
         .thumb-zoom { transition: transform 0.2s ease-in-out, box-shadow 0.2s; cursor: zoom-in; position: absolute; top:0; left:0; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #f1f5f9; z-index: 10; }
         .thumb-zoom:hover { transform: scale(7); z-index: 100; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border-radius: 2px; }
 
+        /* Animation d'entrée pour la landing */
         .landing-card { animation: fadeInUp 0.5s ease-out; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -46,7 +49,7 @@
         <div class="landing-card bg-white p-12 rounded-[2.5rem] shadow-[0_15px_50px_rgba(0,0,0,0.03)] border border-slate-100 max-w-sm w-full text-center space-y-10">
             
             <div class="flex justify-center h-[120px]">
-                <svg id="uuid-4bb7ea02-7359-4c1c-a152-67afd21c150e" data-name="Calque 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260.3 260.3" class="h-full w-auto">
+                <svg viewBox="0 0 260.3 260.3" class="h-full w-auto">
                     <circle fill="#6432c9" cx="130.15" cy="130.15" r="130.15"/>
                     <path fill="#fff" d="M76.32,52.74l18.62,5.9-13.32,42.04,22.39,7.09-4.57,14.41-41.01-12.99,17.89-56.45Z"/>
                     <path fill="#fff" d="M161.18,82.74l-13.17,7.61-7.57-13.09,43.01-24.86,7.57,13.09-13.17,7.61,22.07,38.18-16.67,9.64-22.07-38.18Z"/>
@@ -57,11 +60,11 @@
             </div>
 
             <div class="space-y-4">
-                <h1 class="text-sm font-bold uppercase tracking-widest text-slate-800">Dashboard Suivi Web (Agence)</h1>
+                <h1 class="text-xs font-bold uppercase tracking-widest text-slate-500">Dashboard Suivi Web (Agence)</h1>
                 <select id="initialProjectSelect" class="w-full border border-slate-200 rounded-xl p-4 font-semibold text-xs bg-slate-50 outline-none appearance-none text-center cursor-pointer transition-all hover:border-slate-300">
                     <option value="">Chargement...</option>
                 </select>
-                <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-[#6432c9] text-white font-bold py-4 rounded-xl hover:bg-black transition-all opacity-50 cursor-not-allowed uppercase text-[10px] tracking-widest">Accéder au tableau</button>
+                <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-[#6432c9] text-white font-bold py-4 rounded-xl hover:bg-black transition-all opacity-50 cursor-not-allowed uppercase text-[10px] tracking-widest">Ouvrir le tableau</button>
             </div>
         </div>
     </div>
@@ -79,8 +82,8 @@
                 </select>
             </div>
             <div class="flex items-center gap-6">
-                <button onclick="location.reload()" class="text-[9px] font-bold uppercase text-slate-300 hover:text-black transition-colors tracking-widest">Changer</button>
-                <button onclick="toggleOverlay(true)" class="bg-[#6432c9] text-white px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black transition-all shadow-md">+ Nouveau Retour</button>
+                <button onclick="location.reload()" class="text-[9px] font-bold uppercase text-slate-300 hover:text-black transition-colors tracking-widest">Changer de projet</button>
+                <button onclick="toggleOverlay(true)" class="bg-[#6432c9] text-white px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black transition-all shadow-md">+ Nouveau</button>
             </div>
         </header>
 
@@ -106,20 +109,19 @@
         </div>
         <form id="bugForm" class="space-y-6 pb-10">
             <div id="formContent" class="space-y-6"></div>
-            <button type="submit" id="submitBtn" class="w-full bg-[#6432c9] text-white font-bold py-5 rounded-2xl hover:bg-black transition-all text-[11px] uppercase tracking-[0.2em] shadow-lg">Enregistrer l'observation</button>
+            <button type="submit" id="submitBtn" class="w-full bg-[#6432c9] text-white font-bold py-5 rounded-2xl hover:bg-black transition-all text-[11px] uppercase tracking-widest shadow-lg">Enregistrer l'observation</button>
         </form>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZwfqSEos8tgh_d9K04mJ9zIhP2KW1cSiLxvpuartTHluArZa6dOALIEiyHcuXTya-/exec";
         let store = { projects: [], config: {}, bugs: [] };
-        let activeProject = null;
-        let currentFilter = 'all';
-        let editingId = null;
+        let activeProject = null, currentFilter = 'all', editingId = null;
 
         const IMPACT_MAP = { "Vital": 4, "Important": 3, "OK": 2, "Optimisation": 1 };
         const ICONS = { "Widescreen": "🖥️", "Desktop": "💻", "Tablet": "📟", "Mobile (L)": "📱", "Mobile": "🤳" };
 
+        // Formattage de la date et l'heure
         function formatDateTime(str) {
             if (!str || str === "undefined") return "--/--";
             try {
@@ -129,6 +131,7 @@
             } catch(e) { return str; }
         }
 
+        // Récupération de la miniature Google Drive
         function getDriveThumb(url) {
             if (!url || url === "No Image") return null;
             let id = "";
@@ -139,21 +142,24 @@
             } catch(e) { return null; }
         }
 
+        // Initialisation de l'application
         async function init() {
             try {
                 const resp = await fetch(SCRIPT_URL);
                 store = await resp.json();
-                const select = document.getElementById('initialProjectSelect');
-                select.innerHTML = '<option value="">Sélectionner un projet</option>' + store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
                 
-                const tabs = document.getElementById('breakpointTabs');
+                // Peuplement du select de projet
+                document.getElementById('initialProjectSelect').innerHTML = '<option value="">Choisir Projet</option>' + store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
+                
+                // Peuplement des onglets de breakpoints
                 store.config.breakpoints.forEach(bp => {
                     const btn = document.createElement('button');
                     btn.className = "w-full text-left px-4 py-2.5 rounded-lg text-[10px] font-bold text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest";
                     btn.id = `tab-${bp}`; btn.innerHTML = `${ICONS[bp] || '🌐'} ${bp}`;
                     btn.onclick = () => filterByBreakpoint(bp);
-                    tabs.appendChild(btn);
+                    document.getElementById('breakpointTabs').appendChild(btn);
                 });
+
                 document.getElementById('btn-enter').disabled = false;
                 document.getElementById('btn-enter').classList.remove('opacity-50');
             } catch (err) { console.error(err); }
@@ -179,62 +185,58 @@
         function renderBugList() {
             const container = document.getElementById('bugListContainer');
             const sortBy = document.getElementById('sortSelect').value;
-            let projectBugs = (store.bugs || []).filter(b => b.Project === activeProject.name);
-            if (currentFilter !== 'all') projectBugs = projectBugs.filter(b => b.Breakpoint && b.Breakpoint.includes(currentFilter));
             
-            projectBugs.sort((a, b) => {
+            let bugs = store.bugs.filter(b => b.Project === activeProject.name);
+            if (currentFilter !== 'all') bugs = bugs.filter(b => b.Breakpoint && b.Breakpoint.includes(currentFilter));
+            
+            // Tri
+            bugs.sort((a, b) => {
                 if (sortBy === 'Impact') return (IMPACT_MAP[b.Impact] || 0) - (IMPACT_MAP[a.Impact] || 0);
-                if (sortBy === 'id') return b.ID.localeCompare(a.ID);
-                return String(b[sortBy]).localeCompare(String(a[sortBy]));
+                return b.ID.localeCompare(a.ID);
             });
 
-            container.innerHTML = projectBugs.map(bug => {
+            container.innerHTML = bugs.map(bug => {
                 const isSolved = bug.State === 'Solved';
                 const isClient = (bug['Noticed By'] || "").toUpperCase() === "CLIENT";
-                const dotClass = isSolved ? 'dot-solved' : 'dot-' + (bug.Impact || "ok").toLowerCase().split(' ')[0];
+                const dot = isSolved ? 'dot-solved' : 'dot-' + (bug.Impact || "ok").toLowerCase().split(' ')[0];
                 const thumb = getDriveThumb(bug['Screenshot URL']);
-                const bpIcons = (bug.Breakpoint || "").split(',').map(bp => ICONS[bp.trim()] || "").join('');
 
                 return `
                     <div class="bug-row p-4 flex items-center gap-8 ${isSolved ? 'opacity-30' : ''}">
-                        <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotClass}"></div>
+                        <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 ${dot}"></div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-4 mb-1">
-                                <span class="mono text-[9px] font-bold text-slate-300 uppercase">${bug.ID}</span>
-                                ${isClient ? `<span class="bg-amber-50 text-amber-600 text-[8px] font-bold px-1.5 py-0.5 rounded border border-amber-100 uppercase tracking-widest">Client</span>` : ''}
+                                <span class="text-[9px] font-bold text-slate-300 uppercase">${bug.ID}</span>
+                                ${isClient ? `<span class="bg-amber-50 text-amber-600 text-[8px] font-bold px-1.5 py-0.5 rounded border border-amber-200 uppercase tracking-widest">Client</span>` : ''}
                                 <span class="text-[#6432c9] bg-indigo-50 text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest">${bug.Location || 'GÉNÉRAL'}</span>
-                                <span class="text-[9px] text-slate-300 font-bold ml-auto tracking-normal">${formatDateTime(bug.Timestamp || bug.timestamp)}</span>
+                                <span class="text-[9px] text-slate-300 font-bold ml-auto">${bug.Timestamp || bug.timestamp || '--:--'}</span>
                             </div>
-                            <p class="text-[13px] font-medium text-slate-500 leading-tight truncate cursor-default">${bug.Note || 'Sans note'}</p>
+                            <p class="text-[13px] font-medium text-slate-500 leading-tight truncate">${bug.Note || 'Sans note'}</p>
                         </div>
                         <div class="flex items-center gap-16 flex-shrink-0">
-                            <div class="text-lg flex gap-10 opacity-60">${bpIcons}</div>
-                            <div class="thumb-container">
-                                ${thumb ? `<img src="${thumb}" onclick="window.open('${bug['Screenshot URL']}', '_blank')" class="thumb-zoom shadow-sm">` : `<div class="w-full h-full rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[7px] font-bold text-slate-200">∅</div>`}
+                            <div class="text-lg flex gap-10 opacity-60">
+                                ${(bug.Breakpoint || "").split(',').map(bp => ICONS[bp.trim()] || "").join('')}
+                            </div>
+                            <div class="w-11 h-11 relative">
+                                ${thumb ? `<img src="${thumb}" onclick="window.open('${bug['Screenshot URL']}', '_blank')" class="w-full h-full thumb-zoom shadow-sm">` : `<div class="w-full h-full rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[7px] font-bold text-slate-200">∅</div>`}
                             </div>
                             <div class="flex gap-1">
-                                <button onclick="openEdit('${bug.ID}')" class="p-2 text-slate-200 hover:text-blue-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2" stroke-linecap="round"/></svg></button>
-                                <button onclick="solveBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-green-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                                <button onclick="deleteBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-red-500 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round"/></svg></button>
+                                <button onclick="openEdit('${bug.ID}')" title="Éditer" class="p-2 text-slate-200 hover:text-blue-500 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2" stroke-linecap="round"/></svg>
+                                </button>
+                                <button onclick="solveBug('${bug.ID}')" title="Marquer comme fixé" class="p-2 text-slate-200 hover:text-green-500 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button onclick="deleteBug('${bug.ID}')" title="Supprimer" class="p-2 text-slate-200 hover:text-red-500 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round"/></svg>
+                                </button>
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
         }
 
-        async function solveBug(id) {
-            const bug = store.bugs.find(b => b.ID === id);
-            if (bug) bug.State = "Solved";
-            renderBugList();
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "update_bug", id: id, newState: "Solved" }) });
-        }
-
-        async function deleteBug(id) {
-            store.bugs = store.bugs.filter(b => b.ID !== id);
-            renderBugList();
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete_bug", id: id }) });
-        }
+        // --- GESTION OVERLAY ET FORMULAIRE ---
 
         function openEdit(id) {
             const bug = store.bugs.find(b => b.ID === id);
@@ -243,17 +245,19 @@
         }
 
         function toggleOverlay(show, bug = null) {
-            const overlay = document.getElementById('overlay');
-            const bg = document.getElementById('overlay-bg');
             if (show) {
                 renderFormFields(bug);
                 document.getElementById('formTitle').innerText = bug ? "Modifier le retour" : "Nouveau Rapport";
-                bg.classList.remove('hidden');
-                setTimeout(() => { overlay.classList.add('active'); bg.classList.add('opacity-100'); }, 10);
+                document.getElementById('overlay-bg').classList.remove('hidden');
+                setTimeout(() => { 
+                    document.getElementById('overlay').classList.add('active'); 
+                    document.getElementById('overlay-bg').classList.add('opacity-100'); 
+                }, 10);
             } else {
                 editingId = null;
-                overlay.classList.remove('active'); bg.classList.remove('opacity-100');
-                setTimeout(() => bg.classList.add('hidden'), 300);
+                document.getElementById('overlay').classList.remove('active'); 
+                document.getElementById('overlay-bg').classList.remove('opacity-100');
+                setTimeout(() => document.getElementById('overlay-bg').classList.add('hidden'), 300);
             }
         }
 
@@ -300,9 +304,9 @@
 
         document.getElementById('bugForm').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
+            const btn = document.getElementById('submitBtn'), now = new Date();
             btn.disabled = true; btn.innerText = "Synchronisation...";
-
+            
             const payload = {
                 action: editingId ? "edit_bug" : "log_bug",
                 id: editingId,
@@ -311,33 +315,47 @@
                 Breakpoint: Array.from(document.querySelectorAll('input[name="breakpoint"]:checked')).map(el => el.value).join(', '),
                 Impact: document.getElementById('impactSelect').value,
                 Priority: document.getElementById('prioritySelect').value,
-                'Noticed By': document.querySelector('input[name="noticedBy"]:checked').value,
+                NoticedBy: document.querySelector('input[name="noticedBy"]:checked').value,
                 Project: activeProject.name
             };
 
+            // Données spécifiques à la création
             if (!editingId) {
-                const fileInput = document.getElementById('screenshot');
-                if (fileInput.files && fileInput.files.length > 0) {
-                    payload.imageBlob = await new Promise(r => { const reader = new FileReader(); reader.onload = () => r(reader.result); reader.readAsDataURL(fileInput.files[0]); });
-                    payload.imageType = fileInput.files[0].type; payload.imageName = fileInput.files[0].name;
+                const f = document.getElementById('screenshot').files[0];
+                if (f) {
+                    payload.imageBlob = await new Promise(r => { const rd = new FileReader(); rd.onload = () => r(rd.result); rd.readAsDataURL(f); });
+                    payload.imageType = f.type; payload.imageName = f.name;
                 }
                 payload.client = activeProject.client;
-                payload.dateNoticed = new Date().toLocaleDateString('fr-FR');
-            }
-
-            if (editingId) {
-                const b = store.bugs.find(x => x.ID === editingId);
-                Object.assign(b, payload);
+                payload.dateNoticed = now.toLocaleDateString('fr-FR');
+                
+                // Optimistic UI : Ajout immédiat
+                store.bugs.unshift({...payload, ID: "LTDA-...", State: "Not solved", Timestamp: now.getHours()+":"+now.getMinutes(), 'Noticed By': payload.NoticedBy});
             } else {
-                store.bugs.unshift({...payload, ID: "LTDA-...", State: "Not solved", Timestamp: new Date().toISOString()});
+                // Optimistic UI : Mise à jour immédiate
+                const bugIdx = store.bugs.findIndex(x => x.ID === editingId);
+                Object.assign(store.bugs[bugIdx], {...payload, 'Noticed By': payload.NoticedBy});
             }
             
-            renderBugList();
+            renderBugList(); 
             toggleOverlay(false);
+            
             await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
             btn.disabled = false;
             btn.innerText = "Enregistrer l'observation";
         };
+
+        async function solveBug(id) { 
+            store.bugs.find(b => b.ID === id).State = "Solved"; 
+            renderBugList(); 
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "update_bug", id: id, newState: "Solved" }) }); 
+        }
+        
+        async function deleteBug(id) { 
+            store.bugs = store.bugs.filter(b => b.ID !== id); 
+            renderBugList(); 
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete_bug", id: id }) }); 
+        }
 
         init();
     </script>
