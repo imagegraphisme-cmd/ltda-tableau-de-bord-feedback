@@ -3,28 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LTDA Dashboard</title>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+    <title>LTDA Dashboard PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .impact-vital { border-left: 12px solid #ef4444 !important; background: #fff1f2; }
         .impact-important { border-left: 12px solid #f97316 !important; background: #fff7ed; }
         .impact-ok { border-left: 12px solid #3b82f6 !important; background: #eff6ff; }
         .state-solved { opacity: 0.5; filter: grayscale(1); border-left: 12px solid #22c55e !important; }
-        #overlay { transition: transform 0.4s ease-in-out; transform: translateX(100%); z-index: 100; }
+        #overlay { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 100; }
         #overlay.active { transform: translateX(0); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans text-slate-900">
+<body class="bg-slate-50 min-h-screen font-sans text-slate-900 overflow-x-hidden">
 
     <div id="view-landing" class="flex items-center justify-center min-h-screen p-6">
         <div class="bg-white p-12 rounded-[3rem] shadow-2xl border border-slate-100 max-w-md w-full text-center space-y-8">
             <h1 class="text-4xl font-black uppercase tracking-tighter text-blue-600 italic">LTDA</h1>
-            <select id="initialProjectSelect" class="w-full border-4 border-slate-50 rounded-3xl p-5 focus:border-blue-500 outline-none bg-slate-50 font-bold text-center text-lg appearance-none">
-                <option value="">Connexion au Google Sheet...</option>
-            </select>
+            <select id="initialProjectSelect" class="w-full border-4 border-slate-50 rounded-3xl p-5 focus:border-blue-500 outline-none bg-slate-50 font-bold text-center text-lg appearance-none"></select>
             <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-blue-600 text-white font-black py-6 rounded-3xl hover:bg-blue-700 transition-all opacity-50 cursor-not-allowed uppercase tracking-widest shadow-xl shadow-blue-100">
                 Accéder au suivi
             </button>
@@ -32,20 +28,18 @@
     </div>
 
     <div id="view-dashboard" class="hidden">
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 p-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
+        <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 p-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-                <h2 id="currentProjectTitle" class="text-2xl font-black uppercase tracking-tighter">Projet</h2>
-                <button onclick="location.reload()" class="text-[10px] text-blue-600 font-black uppercase tracking-widest hover:underline">← Changer de projet</button>
+                <h2 id="currentProjectTitle" class="text-2xl font-black uppercase tracking-tighter text-slate-900">Projet</h2>
+                <button onclick="location.reload()" class="text-[10px] text-blue-600 font-black uppercase tracking-widest hover:underline">← Changer de client</button>
             </div>
 
             <div class="flex items-center gap-3 bg-slate-100 p-2 rounded-2xl border border-slate-200">
-                <span class="text-[9px] font-black uppercase px-2 text-slate-400">Trier par :</span>
-                <select id="sortSelect" onchange="renderBugList()" class="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer">
-                    <option value="impact">Impact (Priorité haute)</option>
-                    <option value="priority">Échéance (When?)</option>
-                    <option value="state">État (Non résolus en haut)</option>
-                    <option value="noticedBy">Constaté par</option>
-                    <option value="ID">Ordre Chronologique</option>
+                <span class="text-[9px] font-black uppercase px-2 text-slate-400">Trier :</span>
+                <select id="sortSelect" onchange="renderBugList()" class="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer font-bold">
+                    <option value="impact">Impact (Priorité)</option>
+                    <option value="priority">Échéance</option>
+                    <option value="state">État</option>
                 </select>
             </div>
 
@@ -54,20 +48,19 @@
             </button>
         </header>
 
-        <main class="max-w-4xl mx-auto p-6 md:p-10 space-y-4" id="bugListContainer">
-            </main>
+        <main class="max-w-5xl mx-auto p-6 md:p-10 space-y-4" id="bugListContainer"></main>
     </div>
 
     <div id="overlay-bg" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] hidden opacity-0 transition-opacity" onclick="toggleOverlay(false)"></div>
     <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white z-[100] shadow-2xl overflow-y-auto p-8 md:p-12">
         <div class="flex justify-between items-center mb-10">
-            <h2 class="text-3xl font-black uppercase tracking-tighter">Nouveau Retour</h2>
+            <h2 class="text-3xl font-black uppercase tracking-tighter italic">Nouveau Retour</h2>
             <button onclick="toggleOverlay(false)" class="text-slate-300 text-5xl hover:text-black">&times;</button>
         </div>
         <form id="bugForm" class="space-y-8 pb-10">
             <div id="formContent" class="space-y-8"></div>
-            <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-black py-6 rounded-3xl hover:bg-blue-700 shadow-2xl transition-all uppercase tracking-widest">
-                Enregistrer l'observation
+            <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-black py-6 rounded-3xl hover:bg-blue-700 shadow-2xl transition-all uppercase tracking-widest text-lg">
+                Enregistrer & Continuer
             </button>
         </form>
     </div>
@@ -79,11 +72,7 @@
 
         const IMPACT_MAP = { "Vital": 4, "Important": 3, "OK": 2, "Optimisation": 1 };
         const ICONS = {
-            "Widescreen": "🖥️",
-            "Desktop": "💻",
-            "Tablet": "📟",
-            "Mobile (L)": "📱",
-            "Mobile (V)": "🤳"
+            "Widescreen": "🖥️", "Desktop": "💻", "Tablet": "📟", "Mobile (L)": "📱", "Mobile (V)": "🤳"
         };
 
         async function init() {
@@ -95,7 +84,7 @@
                     store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
                 document.getElementById('btn-enter').disabled = false;
                 document.getElementById('btn-enter').classList.remove('opacity-50', 'cursor-not-allowed');
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("Erreur d'init:", err); }
         }
 
         function enterDashboard() {
@@ -113,7 +102,6 @@
             const sortBy = document.getElementById('sortSelect').value;
             const projectBugs = (store.bugs || []).filter(b => b.Project === activeProject.name);
             
-            // LOGIQUE DE TRI COMPLETE
             projectBugs.sort((a, b) => {
                 if (sortBy === 'impact') return (IMPACT_MAP[b.Impact] || 0) - (IMPACT_MAP[a.Impact] || 0);
                 if (sortBy === 'state') return (a.State === 'Solved' ? 1 : -1);
@@ -128,8 +116,6 @@
             container.innerHTML = projectBugs.map(bug => {
                 const isSolved = bug.State === 'Solved';
                 const impactClass = isSolved ? 'state-solved' : 'impact-' + (bug.Impact || "").toLowerCase().split(' ')[0];
-                
-                // Génération des icônes de breakpoint
                 const bpIcons = (bug.Breakpoint || "").split(',').map(bp => ICONS[bp.trim()] || "🌐").join(' ');
 
                 return `
@@ -137,27 +123,23 @@
                         <div class="flex-1 space-y-4">
                             <div class="flex items-center gap-4">
                                 <span class="px-3 py-1 rounded-full bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest">${bug.ID}</span>
-                                <span class="text-lg" title="${bug.Breakpoint}">${bpIcons}</span>
+                                <span class="text-lg">${bpIcons}</span>
                                 <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">${bug.Location}</span>
                             </div>
                             <p class="text-slate-900 font-bold text-xl leading-tight">${bug.Note || 'Sans note'}</p>
                             <details class="group">
-                                <summary class="list-none text-[10px] font-black text-slate-300 uppercase cursor-pointer hover:text-blue-600 tracking-widest outline-none">Plus d'infos +</summary>
+                                <summary class="list-none text-[10px] font-black text-slate-300 uppercase cursor-pointer hover:text-blue-600 tracking-widest outline-none">Détails +</summary>
                                 <div class="pt-6 grid grid-cols-2 gap-6 border-t mt-6 border-slate-50 text-[10px] uppercase font-bold tracking-tight">
                                     <div><span class="text-slate-400 block text-[8px] mb-1">Impact</span>${bug.Impact}</div>
-                                    <div><span class="text-slate-400 block text-[8px] mb-1">Priorité / Échéance</span>${bug.Priority}</div>
-                                    <div><span class="text-slate-400 block text-[8px] mb-1">Constaté par</span>${bug['Noticed By']}</div>
-                                    <div><span class="text-slate-400 block text-[8px] mb-1">Date Noticed</span>${bug['Date Noticed']}</div>
+                                    <div><span class="text-slate-400 block text-[8px] mb-1">Priorité</span>${bug.Priority}</div>
+                                    <div><span class="text-slate-400 block text-[8px] mb-1">Par</span>${bug['Noticed By']}</div>
+                                    <div><span class="text-slate-400 block text-[8px] mb-1">Date</span>${bug['Date Noticed']}</div>
                                 </div>
                             </details>
                         </div>
                         <div class="flex flex-col gap-3 items-end">
-                            ${!isSolved ? `<button onclick="solveBug('${bug.ID}')" class="bg-green-500 text-white px-5 py-2 rounded-2xl text-[10px] font-black uppercase hover:bg-green-600 transition-all shadow-lg shadow-green-100">Fixé</button>` : '<span class="text-green-600 font-black uppercase text-[10px]">Résolu</span>'}
-                            ${bug['Screenshot URL'] && bug['Screenshot URL'] !== 'No Image' ? `
-                                <a href="${bug['Screenshot URL']}" target="_blank" class="w-16 h-16 rounded-2xl overflow-hidden border border-slate-100 block hover:scale-110 transition-transform">
-                                    <img src="${bug['Screenshot URL']}" class="w-full h-full object-cover">
-                                </a>
-                            ` : ''}
+                            ${!isSolved ? `<button onclick="solveBug('${bug.ID}')" class="bg-green-500 text-white px-5 py-2 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-green-100">Fixé</button>` : '<span class="text-green-600 font-black uppercase text-[10px]">Résolu</span>'}
+                            ${bug['Screenshot URL'] && bug['Screenshot URL'] !== 'No Image' ? `<a href="${bug['Screenshot URL']}" target="_blank" class="w-16 h-16 rounded-2xl overflow-hidden border border-slate-100 block hover:scale-110 transition-transform"><img src="${bug['Screenshot URL']}" class="w-full h-full object-cover"></a>` : ''}
                         </div>
                     </div>
                 `;
@@ -188,51 +170,37 @@
             document.getElementById('formContent').innerHTML = `
                 <div class="grid grid-cols-2 gap-6">
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Niveau d'Impact</label>
-                        <select id="impactSelect" class="w-full border-2 border-slate-100 p-4 rounded-xl font-bold bg-slate-50 outline-none focus:border-blue-500">${store.config.impacts.map(i => `<option>${i}</option>`).join('')}</select>
+                        <label class="text-[10px] font-black uppercase text-slate-400">Impact</label>
+                        <select id="impactSelect" class="w-full border-2 p-4 rounded-xl font-bold bg-slate-50 focus:border-blue-500">${store.config.impacts.map(i => `<option>${i}</option>`).join('')}</select>
                     </div>
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Priorité / Échéance</label>
-                        <select id="prioritySelect" class="w-full border-2 border-slate-100 p-4 rounded-xl font-bold bg-slate-50 outline-none focus:border-blue-500">${store.config.priorities.map(p => `<option>${p}</option>`).join('')}</select>
+                        <label class="text-[10px] font-black uppercase text-slate-400">Échéance</label>
+                        <select id="prioritySelect" class="w-full border-2 p-4 rounded-xl font-bold bg-slate-50 focus:border-blue-500">${store.config.priorities.map(p => `<option>${p}</option>`).join('')}</select>
                     </div>
                 </div>
-
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Zone du projet</label>
+                    <label class="text-[10px] font-black uppercase text-slate-400">Zone</label>
                     <div class="grid grid-cols-2 gap-2">${activeProject.composition.map(c => `
-                        <label class="flex items-center gap-2 p-3 border-2 border-slate-100 rounded-xl text-xs font-bold cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
+                        <label class="flex items-center gap-2 p-3 border-2 rounded-xl text-xs font-bold cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
                             <input type="checkbox" name="location" value="${c}" class="w-4 h-4 text-blue-600"> ${c}
                         </label>
                     `).join('')}</div>
                 </div>
-
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Breakpoints concernés</label>
+                    <label class="text-[10px] font-black uppercase text-slate-400">Breakpoints</label>
                     <div class="flex flex-wrap gap-2">${store.config.breakpoints.map(b => `
-                        <label class="flex items-center gap-2 p-3 border-2 border-slate-100 rounded-xl text-[10px] font-black uppercase cursor-pointer hover:bg-slate-50 has-[:checked]:bg-slate-900 has-[:checked]:text-white">
+                        <label class="flex items-center gap-2 p-3 border-2 rounded-xl text-[10px] font-black uppercase cursor-pointer has-[:checked]:bg-slate-900 has-[:checked]:text-white">
                             <input type="checkbox" name="breakpoint" value="${b}" class="hidden"> ${ICONS[b] || ''} ${b}
                         </label>
                     `).join('')}</div>
                 </div>
-
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Note / Observation</label>
-                    <textarea id="bugNote" class="w-full border-2 border-slate-100 p-5 rounded-[2rem] h-32 outline-none focus:border-blue-500 bg-slate-50" placeholder="Décrivez le problème..."></textarea>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Capture d'écran</label>
-                    <input type="file" id="screenshot" accept="image/*" class="w-full border-2 border-dashed border-slate-200 p-8 rounded-2xl text-xs">
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Constaté par</label>
-                    <div class="flex gap-2">${["Client", "Collaborateur", "LTDA"].map(n => `
-                        <label class="flex-1 text-center p-3 border-2 border-slate-100 rounded-xl text-[10px] font-black uppercase cursor-pointer has-[:checked]:bg-blue-600 has-[:checked]:text-white">
-                            <input type="radio" name="noticedBy" value="${n}" class="hidden" required> ${n}
-                        </label>
-                    `).join('')}</div>
-                </div>
+                <textarea id="bugNote" class="w-full border-2 p-5 rounded-[2rem] h-32 focus:border-blue-500 outline-none bg-slate-50" placeholder="Décrivez le problème..."></textarea>
+                <input type="file" id="screenshot" accept="image/*" class="w-full border-2 border-dashed p-8 rounded-2xl text-xs">
+                <div class="flex gap-2">${["Client", "Collaborateur", "LTDA"].map(n => `
+                    <label class="flex-1 text-center p-3 border-2 rounded-xl text-[10px] font-black uppercase cursor-pointer has-[:checked]:bg-blue-600 has-[:checked]:text-white">
+                        <input type="radio" name="noticedBy" value="${n}" class="hidden" required> ${n}
+                    </label>
+                `).join('')}</div>
             `;
         }
 
@@ -255,26 +223,30 @@
             const payload = {
                 action: "log_bug",
                 dateNoticed: new Date().toLocaleDateString('fr-FR'),
-                client: activeProject.client,
-                project: activeProject.name,
+                client: activeProject.client, project: activeProject.name,
                 impact: document.getElementById('impactSelect').value,
                 priority: document.getElementById('prioritySelect').value,
                 location: Array.from(document.querySelectorAll('input[name="location"]:checked')).map(el => el.value).join(', '),
                 breakpoints: Array.from(document.querySelectorAll('input[name="breakpoint"]:checked')).map(el => el.value).join(', '),
                 note: document.getElementById('bugNote').value,
                 noticedBy: document.querySelector('input[name="noticedBy"]:checked').value,
-                imageBlob: imageBlob,
-                imageType: fileInput.files[0]?.type,
-                imageName: fileInput.files[0]?.name
+                imageBlob: imageBlob, imageType: fileInput.files[0]?.type, imageName: fileInput.files[0]?.name
             };
+
+            // L'astuce : On ajoute localement AVANT de confirmer l'envoi pour la vitesse
+            const tempId = "LTDA-NEW";
+            store.bugs.unshift({ ...payload, ID: tempId, State: "Not solved", 'Date Noticed': payload.dateNoticed, 'Location': payload.location });
+            
+            toggleOverlay(false); // Ferme le formulaire immédiatement
+            renderBugList();      // Met à jour la liste instantanément
 
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
             
-            store.bugs.unshift({ ...payload, ID: "LTDA-NEW", State: "Not solved", 'Date Noticed': payload.dateNoticed });
-            toggleOverlay(false);
-            renderBugList();
             btn.disabled = false;
-            btn.innerText = "Enregistrer l'observation";
+            btn.innerText = "Enregistrer & Continuer";
+            
+            // On peut refaire un fetch silencieux pour avoir le vrai ID de Google si besoin
+            init(); 
         };
 
         init();
