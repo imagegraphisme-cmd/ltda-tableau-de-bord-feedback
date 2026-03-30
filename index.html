@@ -7,97 +7,92 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .required-label::after { content: " *"; color: #ef4444; font-weight: bold; }
-        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; }
+        .tab-active { border-bottom: 3px solid #2563eb; color: #2563eb; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen font-sans text-slate-900">
 
     <div class="max-w-4xl mx-auto p-4 md:p-8">
-        <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-                <h1 class="text-3xl font-black tracking-tight text-slate-900 uppercase">LTDA Web Dashboard</h1>
-                <p class="text-slate-500 italic text-sm">Outil de suivi des retours design et observations </p>
+                <h1 class="text-4xl font-black tracking-tighter text-slate-900 uppercase">LTDA Dashboard</h1>
+                <p class="text-slate-500 italic text-sm">Outil de suivi des retours design et observations</p>
             </div>
-            <nav class="flex gap-4 border-b border-slate-200">
-                <button onclick="switchTab('report')" id="btn-report" class="pb-2 px-4 font-bold tab-active">Rapporter un Bug</button>
-                <button onclick="switchTab('admin')" id="btn-admin" class="pb-2 px-4 font-bold text-slate-400">Configuration Projet</button>
+            <nav class="flex gap-6 border-b border-slate-200">
+                <button onclick="switchTab('report')" id="btn-report" class="pb-3 px-2 font-bold tab-active transition-all">Rapporter un Bug</button>
+                <button onclick="switchTab('admin')" id="btn-admin" class="pb-3 px-2 font-bold text-slate-400 hover:text-slate-600 transition-all">Configuration Projet</button>
             </nav>
         </header>
 
         <div id="tab-report" class="space-y-6">
-            <form id="bugForm" class="bg-white shadow-xl border border-slate-200 rounded-2xl overflow-hidden">
-                <div class="p-6 md:p-8 space-y-8">
+            <form id="bugForm" class="bg-white shadow-2xl border border-slate-200 rounded-3xl overflow-hidden">
+                <div class="p-6 md:p-10 space-y-8">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="block text-xs font-black uppercase tracking-widest text-slate-400 required-label">Projet</label>
-                            <select id="projectSelect" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 focus:border-blue-500 outline-none transition-all">
-                                <option value="">Chargement des projets...</option>
+                            <select id="projectSelect" required class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-4 focus:border-blue-500 outline-none transition-all appearance-none">
+                                <option value="">Chargement des données...</option>
                             </select>
                         </div>
                         <div class="space-y-2">
-                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400">Date constatée (Pré-remplie) [cite: 5]</label>
-                            <input type="date" id="dateNoticed" class="w-full bg-slate-100 border-2 border-slate-100 rounded-xl p-3 text-slate-500 cursor-not-allowed" readonly>
+                            <label class="block text-xs font-black uppercase tracking-widest text-slate-400">Date constatée (Pré-remplie)</label>
+                            <input type="date" id="dateNoticed" class="w-full bg-slate-100 border-2 border-slate-100 rounded-xl p-4 text-slate-500 cursor-not-allowed" readonly>
                         </div>
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400">Note de communication (Optionnel) [cite: 6]</label>
-                        <input type="text" id="commNote" placeholder="Ex: Mail client du 23/04/2026" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-blue-500 outline-none">
+                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400">Note de communication (Optionnel)</label>
+                        <input type="text" id="commNote" placeholder="Ex: Mail client du 23/04/2026" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-blue-500 outline-none">
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 border-t border-slate-100">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-slate-100">
                         <div class="space-y-4">
-                            <label class="block text-sm font-bold text-slate-800 required-label">Constaté par... [cite: 32]</label>
-                            <div class="space-y-3" id="noticedByList">
-                                </div>
+                            <label class="block text-sm font-bold text-slate-800 required-label">Constaté par...</label>
+                            <div class="space-y-3" id="noticedByList"></div>
                         </div>
-
-                        <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-4">
-                                <label class="block text-sm font-bold text-slate-800 required-label">Impact [cite: 47]</label>
+                                <label class="block text-sm font-bold text-slate-800 required-label">Impact</label>
                                 <select id="impactSelect" required class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-blue-500 outline-none"></select>
                             </div>
                             <div class="space-y-4">
-                                <label class="block text-sm font-bold text-slate-800 required-label">Priorité [cite: 74]</label>
+                                <label class="block text-sm font-bold text-slate-800 required-label">Priorité / Échéance</label>
                                 <select id="prioritySelect" required class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-blue-500 outline-none"></select>
                             </div>
                         </div>
                     </div>
 
-                    <div class="space-y-4 pt-6 border-t border-slate-100">
-                        <label class="block text-sm font-bold text-slate-800 required-label">Breakpoint(s) concerné(s) [cite: 16, 19]</label>
-                        <div class="flex flex-wrap gap-2" id="breakpointList">
-                            </div>
+                    <div class="space-y-4 pt-8 border-t border-slate-100">
+                        <label class="block text-sm font-bold text-slate-800 required-label">Breakpoint(s) concerné(s)</label>
+                        <div class="flex flex-wrap gap-2" id="breakpointList"></div>
                     </div>
 
-                    <div id="locationWrapper" class="hidden space-y-4 pt-6 border-t border-slate-100">
-                        <label class="block text-sm font-bold text-slate-800 required-label">Où dans le projet ? [cite: 80-81]</label>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100" id="locationGrid">
-                            </div>
+                    <div id="locationWrapper" class="hidden space-y-4 pt-8 border-t border-slate-100">
+                        <label class="block text-sm font-bold text-slate-800 required-label">Où dans le projet ? (Multi-sélection)</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 bg-slate-50 p-6 rounded-2xl border border-slate-100" id="locationGrid"></div>
                     </div>
 
-                    <div class="space-y-4 pt-6 border-t border-slate-100">
-                        <label class="block text-sm font-bold text-slate-800 required-label">État de l'observation [cite: 42]</label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="stateList">
-                            </div>
+                    <div class="space-y-4 pt-8 border-t border-slate-100">
+                        <label class="block text-sm font-bold text-slate-800 required-label">État de l'observation</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="stateList"></div>
                     </div>
 
-                    <div class="pt-6 border-t border-slate-100 space-y-4">
-                        <label class="block text-sm font-bold text-slate-800 required-label">Note ou Capture d'écran (Min. 1) [cite: 84]</label>
+                    <div class="pt-8 border-t border-slate-100 space-y-4">
+                        <label class="block text-sm font-bold text-slate-800 required-label">Note ou Screenshot (Min. 1)</label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <textarea id="bugNote" placeholder="Décrivez le problème ici..." class="w-full border-2 border-slate-100 rounded-xl p-4 h-32 focus:border-blue-500 outline-none"></textarea>
-                            <div class="relative border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center hover:bg-slate-50 transition-colors">
+                            <textarea id="bugNote" placeholder="Décrivez le problème ici..." class="w-full border-2 border-slate-100 rounded-2xl p-5 h-40 focus:border-blue-500 outline-none"></textarea>
+                            <div class="relative border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center hover:bg-slate-50 transition-all group">
                                 <input type="file" id="screenshot" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
-                                <span class="text-slate-400 text-center text-sm">📸 Cliquer ou glisser une image</span>
-                                <span id="fileName" class="mt-2 text-blue-600 font-bold text-xs"></span>
+                                <span class="text-slate-400 group-hover:text-blue-500 transition-colors text-center text-sm font-medium">📸 Cliquer ou glisser une image</span>
+                                <span id="fileName" class="mt-3 text-blue-600 font-bold text-xs uppercase tracking-widest"></span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-slate-900 p-6">
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-black uppercase tracking-widest py-4 rounded-xl hover:bg-blue-500 transform active:scale-95 transition-all">
+                <div class="bg-slate-900 p-8">
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-black uppercase tracking-widest py-5 rounded-2xl hover:bg-blue-500 transform active:scale-95 transition-all shadow-xl shadow-blue-900/20">
                         Enregistrer l'Observation
                     </button>
                 </div>
@@ -105,25 +100,30 @@
         </div>
 
         <div id="tab-admin" class="hidden">
-            <div class="bg-white shadow-xl border border-slate-200 rounded-2xl p-8 space-y-8">
-                <h2 class="text-xl font-black uppercase tracking-tight">Configuration de Projet</h2>
-                <form id="adminForm" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white shadow-2xl border border-slate-200 rounded-3xl p-8 md:p-12 space-y-10">
+                <div>
+                    <h2 class="text-2xl font-black uppercase tracking-tight">Configuration de Projet</h2>
+                    <p class="text-slate-400 text-sm mt-1">Créez un nouveau client et définissez la structure du projet.</p>
+                </div>
+                
+                <form id="adminForm" class="space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="block text-xs font-black uppercase tracking-widest text-slate-400">Nom du Client</label>
-                            <input type="text" id="adminClient" required placeholder="Ex: Client Alpha" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-blue-500 outline-none">
+                            <input type="text" id="adminClient" required placeholder="Ex: Client Alpha" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-blue-500 outline-none">
                         </div>
                         <div class="space-y-2">
                             <label class="block text-xs font-black uppercase tracking-widest text-slate-400">Nom du Projet</label>
-                            <input type="text" id="adminProject" required placeholder="Ex: Site Vitrine V2" class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-blue-500 outline-none">
+                            <input type="text" id="adminProject" required placeholder="Ex: Site Vitrine V2" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-blue-500 outline-none">
                         </div>
                     </div>
                     <div class="space-y-2">
-                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400 uppercase">Composition du projet (Séparez par des virgules) </label>
-                        <textarea id="adminComp" required placeholder="Ex: Backend, CMS, Homepage, Header, Footer" class="w-full border-2 border-slate-100 rounded-xl p-3 h-24 focus:border-blue-500 outline-none"></textarea>
+                        <label class="block text-xs font-black uppercase tracking-widest text-slate-400">Composition du projet (Éléments séparés par des virgules)</label>
+                        <textarea id="adminComp" required placeholder="Ex: Backend, CMS, Homepage, Header, Footer" class="w-full border-2 border-slate-100 rounded-xl p-4 h-32 focus:border-blue-500 outline-none"></textarea>
+                        <p class="text-[10px] text-slate-400 italic font-medium">C'est ici que vous définissez les zones du projet qui apparaîtront lors du rapport de bug.</p>
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 text-white font-black uppercase tracking-widest py-4 rounded-xl hover:bg-slate-800 transition-all">
-                        Créer le Projet
+                    <button type="submit" id="adminSubmitBtn" class="w-full bg-slate-900 text-white font-black uppercase tracking-widest py-5 rounded-2xl hover:bg-slate-800 transition-all shadow-lg">
+                        Créer le Projet & Client
                     </button>
                 </form>
             </div>
@@ -131,13 +131,13 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZwfqSEos8tgh_d9K04mJ9zIhP2KW1cSiLxvpuartTHluArZa6dOALIEiyHcuXTya-/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysREWfB-QlOxK95hAQwKiqRr1UtaAtI8FCgyy8ZEVnzn6MX5ZIp5-0KJZEpucVtGqS/exec";
         let store = { projects: [], config: {} };
 
-        // 1. Initial Load: Fetch Config from Google Sheet
         async function loadApp() {
             try {
                 const response = await fetch(SCRIPT_URL);
+                if (!response.ok) throw new Error("Erreur de connexion");
                 store = await response.json();
                 
                 populateSelect('projectSelect', store.projects.map(p => ({ val: p.name, text: `${p.client} - ${p.name}` })), "Choisir un projet...");
@@ -150,15 +150,15 @@
                 
                 document.getElementById('dateNoticed').valueAsDate = new Date();
             } catch (e) {
-                alert("Erreur de chargement: " + e);
+                console.error(e);
+                document.getElementById('projectSelect').innerHTML = '<option value="">Erreur de synchronisation...</option>';
             }
         }
 
-        // 2. Dynamic UI Logic
         document.getElementById('projectSelect').addEventListener('change', (e) => {
             const project = store.projects.find(p => p.name === e.target.value);
             const wrapper = document.getElementById('locationWrapper');
-            if (project) {
+            if (project && project.composition) {
                 wrapper.classList.remove('hidden');
                 renderCheckboxes('locationGrid', 'location', project.composition);
             } else {
@@ -170,20 +170,19 @@
             document.getElementById('fileName').innerText = e.target.files[0]?.name || "";
         };
 
-        // 3. Form Submissions
         document.getElementById('bugForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const fileInput = document.getElementById('screenshot');
             const noteInput = document.getElementById('bugNote').value;
 
-            // [cite: 84] Validation: Note AND/OR Screenshot
+            // At least one: Note OR Image
             if (!noteInput && fileInput.files.length === 0) {
                 return alert("Veuillez fournir au moins une note ou une capture d'écran.");
             }
 
             btn.disabled = true;
-            btn.innerText = "Synchronisation avec Google...";
+            btn.innerText = "Synchronisation...";
 
             let imageBlob = null;
             if (fileInput.files.length > 0) {
@@ -213,32 +212,35 @@
             };
 
             const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const res = await resp.json();
-            if (res.status === "success") {
-                alert("Observation enregistrée dans Google Sheets !");
+            if (resp.ok) {
+                alert("Bug enregistré dans Google Sheets !");
                 location.reload();
             }
         };
 
         document.getElementById('adminForm').onsubmit = async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('adminSubmitBtn');
+            btn.disabled = true;
+            btn.innerText = "Création du projet...";
+            
             const payload = {
                 action: "create_project",
                 client: document.getElementById('adminClient').value,
                 project: document.getElementById('adminProject').value,
                 composition: document.getElementById('adminComp').value
             };
+            
             await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            alert("Projet configuré !");
+            alert("Client et Projet configurés avec succès !");
             location.reload();
         };
 
-        // Helpers
         function switchTab(tab) {
             document.getElementById('tab-report').classList.toggle('hidden', tab !== 'report');
             document.getElementById('tab-admin').classList.toggle('hidden', tab !== 'admin');
-            document.getElementById('btn-report').className = tab === 'report' ? "pb-2 px-4 font-bold tab-active" : "pb-2 px-4 font-bold text-slate-400";
-            document.getElementById('btn-admin').className = tab === 'admin' ? "pb-2 px-4 font-bold tab-active" : "pb-2 px-4 font-bold text-slate-400";
+            document.getElementById('btn-report').className = tab === 'report' ? "pb-3 px-2 font-bold tab-active" : "pb-3 px-2 font-bold text-slate-400";
+            document.getElementById('btn-admin').className = tab === 'admin' ? "pb-3 px-2 font-bold tab-active" : "pb-3 px-2 font-bold text-slate-400";
         }
 
         function populateSelect(id, items, placeholder) {
@@ -249,16 +251,16 @@
 
         function renderCheckboxes(containerId, name, items) {
             document.getElementById(containerId).innerHTML = items.map(item => `
-                <label class="flex items-center gap-2 p-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors text-sm">
-                    <input type="checkbox" name="${name}" value="${item}" class="w-4 h-4 text-blue-600"> ${item}
+                <label class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-all text-sm">
+                    <input type="checkbox" name="${name}" value="${item}" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"> ${item}
                 </label>
             `).join('');
         }
 
         function renderRadios(containerId, name, items) {
             document.getElementById(containerId).innerHTML = items.map(item => `
-                <label class="flex items-center gap-3 p-3 border border-slate-100 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-sm">
-                    <input type="radio" name="${name}" value="${item}" required class="w-4 h-4 text-blue-600"> ${item}
+                <label class="flex items-center gap-3 p-4 border border-slate-100 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all text-sm">
+                    <input type="radio" name="${name}" value="${item}" required class="w-4 h-4 text-blue-600 focus:ring-blue-500"> ${item}
                 </label>
             `).join('');
         }
