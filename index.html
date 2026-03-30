@@ -1,140 +1,345 @@
-const FOLDER_ID = "1GbtbIeXh84qbcMgyE4jiL0EH3ckVLRFq";
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Suivi Web</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap');
+        
+        /* Reset Italique & Typo */
+        * { font-family: 'Inter', sans-serif; font-style: normal !important; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Kerning & Poids visuel */
+        .label-track { text-transform: uppercase; letter-spacing: 0.15em; font-size: 9px; font-weight: 800; color: #94a3b8; }
+        .title-track { letter-spacing: -0.04em; font-weight: 800; }
 
-function doGet() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var configSheet = ss.getSheetByName("Config");
-  var configData = configSheet.getDataRange().getValues();
-  
-  var config = {
-    impacts: getColumnData(configData, 0),
-    states: getColumnData(configData, 1),
-    priorities: getColumnData(configData, 2),
-    breakpoints: getColumnData(configData, 3)
-  };
+        /* Couleurs Impact */
+        .dot-vital { background-color: #ef4444; }
+        .dot-important { background-color: #f59e0b; }
+        .dot-ok { background-color: #3b82f6; }
+        .dot-solved { background-color: #10b981; }
 
-  var projectSheet = ss.getSheetByName("Projects");
-  var projectRows = projectSheet.getDataRange().getValues().slice(1);
-  var projects = projectRows.map(function(row) {
-    return {
-      client: row[0],
-      name: row[1],
-      composition: row[2] ? row[2].split(',').map(function(item) { return item.trim(); }) : []
-    };
-  });
+        /* Rows */
+        .bug-row { border-bottom: 1px solid #f1f5f9; transition: background 0.1s; }
+        .bug-row:hover { background-color: #f8fafc; }
+        
+        .tab-active { background-color: #f8fafc; color: #6432c9; font-weight: 800; border-left: 3px solid #6432c9; }
+        
+        #overlay { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 200; }
+        #overlay.active { transform: translateX(0); }
 
-  var bugSheet = ss.getSheetByName("Bugs");
-  var bugData = bugSheet.getDataRange().getValues();
-  var bugs = [];
-  
-  if (bugData.length > 1) {
-    var headers = bugData[0];
-    for (var i = 1; i < bugData.length; i++) {
-      var row = bugData[i];
-      var obj = {};
-      for (var j = 0; j < headers.length; j++) {
-        var val = row[j];
-        if (val instanceof Date) {
-          if (j === 1) { 
-             obj[headers[j]] = Utilities.formatDate(val, Session.getScriptTimeZone(), "dd/MM HH:mm");
-          } else {
-             obj[headers[j]] = Utilities.formatDate(val, Session.getScriptTimeZone(), "dd/MM/yyyy");
-          }
-        } else {
-          obj[headers[j]] = val;
+        /* Mega Zoom */
+        .thumb-container { position: relative; width: 44px; height: 44px; }
+        .thumb-zoom { transition: transform 0.2s ease-in-out, box-shadow 0.2s; cursor: zoom-in; position: absolute; top:0; left:0; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #f1f5f9; z-index: 10; }
+        .thumb-zoom:hover { transform: scale(7); z-index: 100; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border-radius: 2px; }
+
+        .landing-card { animation: fadeInUp 0.5s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-white text-slate-900 overflow-x-hidden">
+
+    <div id="view-landing" class="fixed inset-0 z-[300] flex items-center justify-center bg-[#fcfcff] p-6">
+        <div class="landing-card bg-white p-12 rounded-[2.5rem] shadow-[0_15px_50px_rgba(0,0,0,0.03)] border border-slate-100 max-w-sm w-full text-center space-y-10">
+            
+            <div class="flex justify-center h-[120px]">
+                <svg id="uuid-4bb7ea02-7359-4c1c-a152-67afd21c150e" data-name="Calque 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260.3 260.3" class="h-full w-auto">
+                    <circle fill="#6432c9" cx="130.15" cy="130.15" r="130.15"/>
+                    <path fill="#fff" d="M76.32,52.74l18.62,5.9-13.32,42.04,22.39,7.09-4.57,14.41-41.01-12.99,17.89-56.45Z"/>
+                    <path fill="#fff" d="M161.18,82.74l-13.17,7.61-7.57-13.09,43.01-24.86,7.57,13.09-13.17,7.61,22.07,38.18-16.67,9.64-22.07-38.18Z"/>
+                    <path fill="#fff" d="M53.02,147.22l24.15-7.2c20.1-5.99,33.43.93,38.88,19.21,5.71,19.15-1.44,31.42-20.32,37.05l-25.79,7.69-16.91-56.75ZM91.42,182.17c6.12-1.83,9.2-7.25,6.17-17.43-3.01-10.09-8.79-12.78-15.17-10.88l-6.64,1.98,8.48,28.46,7.16-2.13Z"/>
+                    <path fill="#fff" d="M177.09,192.81l-19.06-.95-3.58,10.45-19.33-.96,24.25-58.08,24.81,1.24,18.35,60.21-22.92-1.14-2.53-10.76ZM174.71,182.69l-5.35-22.88h-.27s-7.69,22.22-7.69,22.22l13.3.66Z"/>
+                    <path fill="#fff" d="M146.01,124.39c-4.53-1.77-6.97-.68-8.44,2.71l-.18.41,5.53,2.41-6.28,14.44-14.61-6.35,4.31-9.9c5.24-12.05,12.9-14.31,22.58-10.39l-2.91,6.68Z"/>
+                </svg>
+            </div>
+
+            <div class="space-y-4">
+                <h1 class="text-sm font-bold uppercase tracking-widest text-slate-800">Dashboard Suivi Web (Agence)</h1>
+                <select id="initialProjectSelect" class="w-full border border-slate-200 rounded-xl p-4 font-semibold text-xs bg-slate-50 outline-none appearance-none text-center cursor-pointer transition-all hover:border-slate-300">
+                    <option value="">Chargement...</option>
+                </select>
+                <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-[#6432c9] text-white font-bold py-4 rounded-xl hover:bg-black transition-all opacity-50 cursor-not-allowed uppercase text-[10px] tracking-widest">Accéder au tableau</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-dashboard" class="hidden flex flex-col min-h-screen">
+        <header class="bg-white border-b border-slate-100 sticky top-0 z-30 px-8 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-10">
+                <div class="flex items-center gap-4">
+                    <h2 id="currentProjectTitle" class="text-xl font-bold uppercase title-track">Projet</h2>
+                </div>
+                <select id="sortSelect" onchange="renderBugList()" class="hidden lg:block bg-slate-50 border border-slate-100 text-[9px] font-bold uppercase label-track rounded-lg px-3 py-1.5 outline-none cursor-pointer">
+                    <option value="id">Ordre Chrono</option>
+                    <option value="Impact">Par Impact</option>
+                    <option value="State">Par État</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-6">
+                <button onclick="location.reload()" class="text-[9px] font-bold uppercase text-slate-300 hover:text-black transition-colors tracking-widest">Changer</button>
+                <button onclick="toggleOverlay(true)" class="bg-[#6432c9] text-white px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black transition-all shadow-md">+ Nouveau Retour</button>
+            </div>
+        </header>
+
+        <div class="flex flex-1">
+            <aside class="w-56 bg-white border-r border-slate-100 sticky top-16 h-[calc(100vh-4rem)] p-4 hidden md:block">
+                <p class="label-track mb-3 px-4">Breakpoints</p>
+                <nav id="breakpointTabs" class="space-y-0.5">
+                    <button onclick="filterByBreakpoint('all')" class="w-full text-left px-4 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest tab-active" id="tab-all">Toutes les vues</button>
+                </nav>
+            </aside>
+
+            <main class="flex-1 bg-white">
+                <div id="bugListContainer" class="flex flex-col"></div>
+            </main>
+        </div>
+    </div>
+
+    <div id="overlay-bg" class="fixed inset-0 bg-slate-900/10 backdrop-blur-sm z-[150] hidden opacity-0 transition-opacity" onclick="toggleOverlay(false)"></div>
+    <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-lg bg-white z-[200] shadow-2xl overflow-y-auto p-10">
+        <div class="flex justify-between items-center mb-8">
+            <h2 id="formTitle" class="text-xl font-bold uppercase title-track">Nouveau Rapport</h2>
+            <button onclick="toggleOverlay(false)" class="text-slate-200 text-4xl hover:text-black transition-colors">&times;</button>
+        </div>
+        <form id="bugForm" class="space-y-6 pb-10">
+            <div id="formContent" class="space-y-6"></div>
+            <button type="submit" id="submitBtn" class="w-full bg-[#6432c9] text-white font-bold py-5 rounded-2xl hover:bg-black transition-all text-[11px] uppercase tracking-[0.2em] shadow-lg">Enregistrer l'observation</button>
+        </form>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZwfqSEos8tgh_d9K04mJ9zIhP2KW1cSiLxvpuartTHluArZa6dOALIEiyHcuXTya-/exec";
+        let store = { projects: [], config: {}, bugs: [] };
+        let activeProject = null;
+        let currentFilter = 'all';
+        let editingId = null;
+
+        const IMPACT_MAP = { "Vital": 4, "Important": 3, "OK": 2, "Optimisation": 1 };
+        const ICONS = { "Widescreen": "🖥️", "Desktop": "💻", "Tablet": "📟", "Mobile (L)": "📱", "Mobile": "🤳" };
+
+        function formatDateTime(str) {
+            if (!str || str === "undefined") return "--/--";
+            try {
+                const d = new Date(str);
+                if (isNaN(d.getTime())) return str;
+                return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}) + " " + d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+            } catch(e) { return str; }
         }
-      }
-      bugs.push(obj);
-    }
-  }
-  bugs.reverse();
 
-  return ContentService.createTextOutput(JSON.stringify({ config: config, projects: projects, bugs: bugs })).setMimeType(ContentService.MimeType.JSON);
-}
+        function getDriveThumb(url) {
+            if (!url || url === "No Image") return null;
+            let id = "";
+            try {
+                if (url.includes('id=')) id = url.split('id=')[1].split('&')[0];
+                else if (url.includes('/d/')) id = url.split('/d/')[1].split('/')[0];
+                return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w400` : null;
+            } catch(e) { return null; }
+        }
 
-function doPost(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var data = JSON.parse(e.postData.contents);
-  var sheet = ss.getSheetByName("Bugs");
+        async function init() {
+            try {
+                const resp = await fetch(SCRIPT_URL);
+                store = await resp.json();
+                const select = document.getElementById('initialProjectSelect');
+                select.innerHTML = '<option value="">Sélectionner un projet</option>' + store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
+                
+                const tabs = document.getElementById('breakpointTabs');
+                store.config.breakpoints.forEach(bp => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left px-4 py-2.5 rounded-lg text-[10px] font-bold text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest";
+                    btn.id = `tab-${bp}`; btn.innerHTML = `${ICONS[bp] || '🌐'} ${bp}`;
+                    btn.onclick = () => filterByBreakpoint(bp);
+                    tabs.appendChild(btn);
+                });
+                document.getElementById('btn-enter').disabled = false;
+                document.getElementById('btn-enter').classList.remove('opacity-50');
+            } catch (err) { console.error(err); }
+        }
 
-  // LOGIQUE LOG BUG
-  if (data.action === "log_bug") {
-    var imageUrl = "No Image";
-    if (data.imageBlob) {
-      try {
-        var folder = DriveApp.getFolderById(FOLDER_ID);
-        var blob = Utilities.newBlob(Utilities.base64Decode(data.imageBlob.split(",")[1]), data.imageType, data.imageName);
-        imageUrl = folder.createFile(blob).getUrl();
-      } catch (err) { imageUrl = "Error Image"; }
-    }
-    
-    var lastRow = sheet.getLastRow();
-    var nextId = "LTDA-" + (lastRow).toString().padStart(3, '0');
-    
-    // On utilise EXACTEMENT les clés envoyées par l'interface (Majuscules)
-    sheet.appendRow([
-      nextId,                     // A: ID
-      new Date(),                 // B: Timestamp
-      data.dateNoticed || "",     // C: Date Noticed
-      "",                         // D: Comm Note
-      data.client || "",          // E: Client
-      data.Project || "",         // F: Project
-      data['Noticed By'] || "",   // G: Noticed By
-      data.Breakpoint || "",      // H: Breakpoint
-      "Not solved",               // I: State
-      data.Impact || "",          // J: Impact
-      data.Priority || "",        // K: Priority
-      data.Location || "",        // L: Location
-      data.Note || "",            // M: Note
-      imageUrl                    // N: Screenshot URL
-    ]);
-    
-    return ContentService.createTextOutput(JSON.stringify({status: "success", id: nextId})).setMimeType(ContentService.MimeType.JSON);
-  }
+        function filterByBreakpoint(bp) {
+            currentFilter = bp;
+            document.querySelectorAll('#breakpointTabs button').forEach(b => b.classList.remove('tab-active', 'text-[#6432c9]'));
+            document.getElementById(`tab-${bp}`).classList.add('tab-active');
+            renderBugList();
+        }
 
-  // LOGIQUE EDIT BUG
-  if (data.action === "edit_bug") {
-    var rows = sheet.getDataRange().getValues();
-    for (var i = 1; i < rows.length; i++) {
-      if (rows[i][0] === data.id) {
-        var rowNum = i + 1;
-        sheet.getRange(rowNum, 6).setValue(data.Project);
-        sheet.getRange(rowNum, 7).setValue(data['Noticed By']);
-        sheet.getRange(rowNum, 8).setValue(data.Breakpoint);
-        sheet.getRange(rowNum, 10).setValue(data.Impact);
-        sheet.getRange(rowNum, 11).setValue(data.Priority);
-        sheet.getRange(rowNum, 12).setValue(data.Location);
-        sheet.getRange(rowNum, 13).setValue(data.Note);
-        break;
-      }
-    }
-    return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
-  }
+        function enterDashboard() {
+            const pName = document.getElementById('initialProjectSelect').value;
+            if (!pName) return;
+            activeProject = store.projects.find(p => p.name === pName);
+            document.getElementById('view-landing').style.display = 'none';
+            document.getElementById('view-dashboard').classList.remove('hidden');
+            document.getElementById('currentProjectTitle').innerText = activeProject.name;
+            renderBugList();
+        }
 
-  // LOGIQUE UPDATE STATE
-  if (data.action === "update_bug") {
-    var vals = sheet.getDataRange().getValues();
-    for (var i = 1; i < vals.length; i++) {
-      if (vals[i][0] === data.id) {
-        sheet.getRange(i + 1, 9).setValue(data.newState);
-        break;
-      }
-    }
-    return ContentService.createTextOutput("Success");
-  }
+        function renderBugList() {
+            const container = document.getElementById('bugListContainer');
+            const sortBy = document.getElementById('sortSelect').value;
+            let projectBugs = (store.bugs || []).filter(b => b.Project === activeProject.name);
+            if (currentFilter !== 'all') projectBugs = projectBugs.filter(b => b.Breakpoint && b.Breakpoint.includes(currentFilter));
+            
+            projectBugs.sort((a, b) => {
+                if (sortBy === 'Impact') return (IMPACT_MAP[b.Impact] || 0) - (IMPACT_MAP[a.Impact] || 0);
+                if (sortBy === 'id') return b.ID.localeCompare(a.ID);
+                return String(b[sortBy]).localeCompare(String(a[sortBy]));
+            });
 
-  // LOGIQUE DELETE
-  if (data.action === "delete_bug") {
-    var vals = sheet.getDataRange().getValues();
-    for (var i = 1; i < vals.length; i++) {
-      if (vals[i][0] === data.id) {
-        sheet.deleteRow(i + 1);
-        break;
-      }
-    }
-    return ContentService.createTextOutput("Success");
-  }
-}
+            container.innerHTML = projectBugs.map(bug => {
+                const isSolved = bug.State === 'Solved';
+                const isClient = (bug['Noticed By'] || "").toUpperCase() === "CLIENT";
+                const dotClass = isSolved ? 'dot-solved' : 'dot-' + (bug.Impact || "ok").toLowerCase().split(' ')[0];
+                const thumb = getDriveThumb(bug['Screenshot URL']);
+                const bpIcons = (bug.Breakpoint || "").split(',').map(bp => ICONS[bp.trim()] || "").join('');
 
-function getColumnData(data, colIndex) {
-  return data.map(function(row) { return row[colIndex]; }).filter(function(val, i) { return i > 0 && val !== ""; });
-}
+                return `
+                    <div class="bug-row p-4 flex items-center gap-8 ${isSolved ? 'opacity-30' : ''}">
+                        <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotClass}"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-4 mb-1">
+                                <span class="mono text-[9px] font-bold text-slate-300 uppercase">${bug.ID}</span>
+                                ${isClient ? `<span class="bg-amber-50 text-amber-600 text-[8px] font-bold px-1.5 py-0.5 rounded border border-amber-100 uppercase tracking-widest">Client</span>` : ''}
+                                <span class="text-[#6432c9] bg-indigo-50 text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest">${bug.Location || 'GÉNÉRAL'}</span>
+                                <span class="text-[9px] text-slate-300 font-bold ml-auto tracking-normal">${formatDateTime(bug.Timestamp || bug.timestamp)}</span>
+                            </div>
+                            <p class="text-[13px] font-medium text-slate-500 leading-tight truncate cursor-default">${bug.Note || 'Sans note'}</p>
+                        </div>
+                        <div class="flex items-center gap-16 flex-shrink-0">
+                            <div class="text-lg flex gap-10 opacity-60">${bpIcons}</div>
+                            <div class="thumb-container">
+                                ${thumb ? `<img src="${thumb}" onclick="window.open('${bug['Screenshot URL']}', '_blank')" class="thumb-zoom shadow-sm">` : `<div class="w-full h-full rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[7px] font-bold text-slate-200">∅</div>`}
+                            </div>
+                            <div class="flex gap-1">
+                                <button onclick="openEdit('${bug.ID}')" class="p-2 text-slate-200 hover:text-blue-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2" stroke-linecap="round"/></svg></button>
+                                <button onclick="solveBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-green-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                                <button onclick="deleteBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-red-500 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round"/></svg></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function solveBug(id) {
+            const bug = store.bugs.find(b => b.ID === id);
+            if (bug) bug.State = "Solved";
+            renderBugList();
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "update_bug", id: id, newState: "Solved" }) });
+        }
+
+        async function deleteBug(id) {
+            store.bugs = store.bugs.filter(b => b.ID !== id);
+            renderBugList();
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete_bug", id: id }) });
+        }
+
+        function openEdit(id) {
+            const bug = store.bugs.find(b => b.ID === id);
+            editingId = id;
+            toggleOverlay(true, bug);
+        }
+
+        function toggleOverlay(show, bug = null) {
+            const overlay = document.getElementById('overlay');
+            const bg = document.getElementById('overlay-bg');
+            if (show) {
+                renderFormFields(bug);
+                document.getElementById('formTitle').innerText = bug ? "Modifier le retour" : "Nouveau Rapport";
+                bg.classList.remove('hidden');
+                setTimeout(() => { overlay.classList.add('active'); bg.classList.add('opacity-100'); }, 10);
+            } else {
+                editingId = null;
+                overlay.classList.remove('active'); bg.classList.remove('opacity-100');
+                setTimeout(() => bg.classList.add('hidden'), 300);
+            }
+        }
+
+        function renderFormFields(bug = null) {
+            const impacts = store.config.impacts.map(i => `<option ${bug && bug.Impact === i ? 'selected' : ''}>${i}</option>`).join('');
+            const priorities = store.config.priorities.map(p => `<option ${bug && bug.Priority === p ? 'selected' : ''}>${p}</option>`).join('');
+            
+            document.getElementById('formContent').innerHTML = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="label-track">Impact</label>
+                        <select id="impactSelect" class="w-full border border-slate-200 p-3 rounded-xl font-bold text-[10px] bg-slate-50 outline-none">${impacts}</select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="label-track">Timing</label>
+                        <select id="prioritySelect" class="w-full border border-slate-200 p-3 rounded-xl font-bold text-[10px] bg-slate-50 outline-none">${priorities}</select>
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="label-track">Zone</label>
+                    <div class="grid grid-cols-2 gap-2">${activeProject.composition.map(c => `
+                        <label class="flex items-center gap-2.5 p-3.5 border border-slate-100 rounded-xl text-[10px] font-bold uppercase tracking-widest cursor-pointer hover:bg-slate-50 has-[:checked]:bg-indigo-50 transition-all">
+                            <input type="checkbox" name="location" value="${c}" class="w-3.5 h-3.5 text-[#6432c9]" ${bug && bug.Location.includes(c) ? 'checked' : ''}> ${c}
+                        </label>
+                    `).join('')}</div>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="label-track">Breakpoints</label>
+                    <div class="flex flex-wrap gap-2">${store.config.breakpoints.map(b => `
+                        <label class="flex items-center gap-2.5 p-3.5 border border-slate-100 rounded-xl text-[10px] font-bold uppercase tracking-widest cursor-pointer hover:bg-slate-50 has-[:checked]:bg-black has-[:checked]:text-white transition-all">
+                            <input type="checkbox" name="breakpoint" value="${b}" class="hidden" ${bug && bug.Breakpoint.includes(b) ? 'checked' : ''}> ${ICONS[b] || ''} ${b}
+                        </label>
+                    `).join('')}</div>
+                </div>
+                <textarea id="bugNote" class="w-full border border-slate-200 p-5 rounded-2xl h-28 focus:border-[#6432c9] outline-none bg-slate-50 font-medium text-xs" placeholder="Détails du problème...">${bug ? bug.Note : ''}</textarea>
+                ${!bug ? `<div class="space-y-1"><label class="label-track">Capture</label><input type="file" id="screenshot" accept="image/*" class="w-full border border-slate-200 p-5 rounded-xl text-[9px] font-bold uppercase"></div>` : ''}
+                <div class="flex gap-2">${["Client", "Collaborateur", "LTDA"].map(n => `
+                    <label class="flex-1 text-center p-3.5 border border-slate-100 rounded-xl text-[9px] font-bold uppercase tracking-widest cursor-pointer has-[:checked]:bg-[#6432c9] has-[:checked]:text-white transition-all">
+                        <input type="radio" name="noticedBy" value="${n}" class="hidden" required ${bug && bug['Noticed By'] === n ? 'checked' : (!bug && n === 'Collaborateur' ? 'checked' : '')}> ${n}
+                    </label>
+                `).join('')}</div>
+            `;
+        }
+
+        document.getElementById('bugForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerText = "Synchronisation...";
+
+            const payload = {
+                action: editingId ? "edit_bug" : "log_bug",
+                id: editingId,
+                Note: document.getElementById('bugNote').value,
+                Location: Array.from(document.querySelectorAll('input[name="location"]:checked')).map(el => el.value).join(', '),
+                Breakpoint: Array.from(document.querySelectorAll('input[name="breakpoint"]:checked')).map(el => el.value).join(', '),
+                Impact: document.getElementById('impactSelect').value,
+                Priority: document.getElementById('prioritySelect').value,
+                'Noticed By': document.querySelector('input[name="noticedBy"]:checked').value,
+                Project: activeProject.name
+            };
+
+            if (!editingId) {
+                const fileInput = document.getElementById('screenshot');
+                if (fileInput.files && fileInput.files.length > 0) {
+                    payload.imageBlob = await new Promise(r => { const reader = new FileReader(); reader.onload = () => r(reader.result); reader.readAsDataURL(fileInput.files[0]); });
+                    payload.imageType = fileInput.files[0].type; payload.imageName = fileInput.files[0].name;
+                }
+                payload.client = activeProject.client;
+                payload.dateNoticed = new Date().toLocaleDateString('fr-FR');
+            }
+
+            if (editingId) {
+                const b = store.bugs.find(x => x.ID === editingId);
+                Object.assign(b, payload);
+            } else {
+                store.bugs.unshift({...payload, ID: "LTDA-...", State: "Not solved", Timestamp: new Date().toISOString()});
+            }
+            
+            renderBugList();
+            toggleOverlay(false);
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+            btn.disabled = false;
+            btn.innerText = "Enregistrer l'observation";
+        };
+
+        init();
+    </script>
+</body>
+</html>
