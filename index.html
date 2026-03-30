@@ -6,184 +6,173 @@
     <title>LTDA Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .impact-vital { border-left: 4px solid #ef4444; background: #fef2f2; }
-        .impact-important { border-left: 4px solid #f97316; background: #fff7ed; }
-        .state-solved { opacity: 0.6; filter: grayscale(1); }
-        .required-label::after { content: " *"; color: #ef4444; }
-        /* Overlay Animation */
+        /* Styles pour les niveaux d'impact [cite: 47-53, 64-65] */
+        .impact-vital { border-left: 6px solid #ef4444 !important; background: #fef2f2; }
+        .impact-important { border-left: 6px solid #f97316 !important; background: #fff7ed; }
+        .state-solved { opacity: 0.4; filter: grayscale(1); }
+        
         #overlay { transition: transform 0.3s ease-out; transform: translateX(100%); }
         #overlay.active { transform: translateX(0); }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen font-sans text-slate-900">
+<body class="bg-slate-50 min-h-screen font-sans text-slate-900">
 
     <div id="view-landing" class="flex items-center justify-center min-h-screen p-6">
-        <div class="bg-white p-8 rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full text-center space-y-6">
-            <h1 class="text-3xl font-black uppercase tracking-tighter">LTDA Dashboard</h1>
+        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 max-w-md w-full text-center space-y-8">
+            <h1 class="text-3xl font-black uppercase tracking-tighter">LTDA DASHBOARD</h1>
             <p class="text-slate-400 text-sm italic">Sélectionner un projet pour commencer</p>
-            <select id="initialProjectSelect" class="w-full border-2 border-slate-100 rounded-xl p-4 focus:border-blue-500 outline-none appearance-none bg-slate-50 font-bold">
-                <option value="">Chargement...</option>
+            
+            <select id="initialProjectSelect" class="w-full border-2 border-slate-100 rounded-2xl p-4 focus:border-blue-500 outline-none appearance-none bg-slate-50 font-bold text-center">
+                <option value="">Chargement des données...</option>
             </select>
-            <div class="flex gap-2">
-                <button onclick="enterDashboard()" class="flex-1 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition-all">Accéder au suivi</button>
-                <button onclick="switchTab('admin')" class="p-4 bg-slate-100 rounded-xl hover:bg-slate-200">⚙️</button>
+
+            <div class="flex gap-3">
+                <button onclick="enterDashboard()" id="btn-enter" disabled class="flex-1 bg-blue-600 text-white font-black py-4 rounded-2xl hover:bg-blue-700 transition-all opacity-50 cursor-not-allowed shadow-lg shadow-blue-200">
+                    Accéder au suivi
+                </button>
+                <button onclick="showView('admin')" class="p-4 bg-slate-100 rounded-2xl hover:bg-slate-200 transition-colors">⚙️</button>
             </div>
         </div>
     </div>
 
-    <div id="view-dashboard" class="hidden pb-20">
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 p-4 md:px-8">
+    <div id="view-dashboard" class="hidden">
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 p-4 md:px-10">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div>
-                    <h2 id="currentProjectTitle" class="text-xl font-black uppercase tracking-tight">Projet</h2>
-                    <button onclick="location.reload()" class="text-xs text-blue-600 font-bold hover:underline">← Changer de projet</button>
+                    <h2 id="currentProjectTitle" class="text-xl font-black uppercase tracking-tighter text-slate-900">Projet</h2>
+                    <button onclick="location.reload()" class="text-[10px] text-blue-600 font-black uppercase tracking-widest hover:underline">← Changer de projet</button>
                 </div>
-                <button onclick="toggleOverlay(true)" class="bg-slate-900 text-white px-6 py-3 rounded-full font-bold text-sm hover:scale-105 transition-transform shadow-lg">
-                    + Nouvelle Observation
+                <button onclick="toggleOverlay(true)" class="bg-slate-900 text-white px-8 py-4 rounded-full font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-xl">
+                    + Observation
                 </button>
             </div>
         </header>
 
-        <main class="max-w-6xl mx-auto p-4 md:p-8 space-y-4" id="bugListContainer">
+        <main class="max-w-4xl mx-auto p-6 md:p-12 space-y-6" id="bugListContainer">
             </main>
     </div>
 
-    <div id="overlay-bg" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden transition-opacity" onclick="toggleOverlay(false)"></div>
-    <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white z-50 shadow-2xl overflow-y-auto border-l border-slate-200">
-        <div class="p-6 md:p-8 space-y-8">
-            <div class="flex justify-between items-center border-b pb-4">
-                <h2 class="text-2xl font-black uppercase tracking-tighter">Rapporter un Bug</h2>
-                <button onclick="toggleOverlay(false)" class="text-slate-400 text-2xl hover:text-slate-900">&times;</button>
-            </div>
-
-            <form id="bugForm" class="space-y-6 pb-12">
-                <div class="space-y-2">
-                    <label class="block text-xs font-black uppercase text-slate-400 required-label">Constaté par...</label>
-                    <div id="noticedByList" class="grid grid-cols-1 gap-2"></div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="block text-xs font-black uppercase text-slate-400 required-label">Impact</label>
-                        <select id="impactSelect" required class="w-full border rounded-lg p-2"></select>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-xs font-black uppercase text-slate-400 required-label">Priorité</label>
-                        <select id="prioritySelect" required class="w-full border rounded-lg p-2"></select>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="block text-xs font-black uppercase text-slate-400 required-label">Breakpoint(s)</label>
-                    <div id="breakpointList" class="flex flex-wrap gap-2"></div>
-                </div>
-
-                <div id="locationWrapper" class="space-y-2 pt-4 border-t">
-                    <label class="block text-xs font-black uppercase text-slate-400 required-label">Où dans le projet ?</label>
-                    <div id="locationGrid" class="grid grid-cols-2 gap-2 bg-slate-50 p-4 rounded-xl border border-slate-100"></div>
-                </div>
-
-                <div class="space-y-2 pt-4 border-t">
-                    <label class="block text-xs font-black uppercase text-slate-400 required-label">État</label>
-                    <div id="stateList" class="grid grid-cols-1 gap-2"></div>
-                </div>
-
-                <div class="space-y-4">
-                    <label class="block text-xs font-black uppercase text-slate-400">Note ou Capture d'écran (Min. 1)</label>
-                    <textarea id="bugNote" class="w-full border-2 rounded-xl p-4 h-32 focus:border-blue-500 outline-none" placeholder="Description du problème..."></textarea>
-                    <input type="file" id="screenshot" accept="image/*" class="w-full border-2 border-dashed p-4 rounded-xl text-xs">
-                </div>
-
-                <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-200">
-                    Enregistrer dans le tableau
-                </button>
-            </form>
+    <div id="overlay-bg" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300" onclick="toggleOverlay(false)"></div>
+    <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white z-50 shadow-2xl overflow-y-auto border-l border-slate-100 p-8 md:p-12 space-y-10">
+        <div class="flex justify-between items-center">
+            <h2 class="text-3xl font-black uppercase tracking-tighter">Rapporter</h2>
+            <button onclick="toggleOverlay(false)" class="text-slate-300 text-4xl hover:text-slate-900 transition-colors">&times;</button>
         </div>
+
+        <form id="bugForm" class="space-y-8 pb-10">
+            <div id="formContent" class="space-y-8">
+                </div>
+            <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-black py-5 rounded-2xl hover:bg-blue-700 shadow-xl transition-all">
+                Enregistrer dans le tableau
+            </button>
+        </form>
     </div>
 
-    <div id="view-admin" class="hidden p-8 max-w-4xl mx-auto">
-        <button onclick="location.reload()" class="mb-4 font-bold text-blue-600">← Retour</button>
-        <div class="bg-white p-8 rounded-3xl shadow-xl space-y-6">
-            <h2 class="text-2xl font-black uppercase tracking-tight">Configuration Projet</h2>
+    <div id="view-admin" class="hidden p-8 max-w-2xl mx-auto mt-10">
+        <button onclick="location.reload()" class="mb-6 font-black text-blue-600 uppercase text-[10px] tracking-widest">← Retour au Dashboard</button>
+        <div class="bg-white p-10 rounded-[2.5rem] shadow-2xl space-y-8 border border-slate-100">
+            <h2 class="text-2xl font-black uppercase tracking-tighter">Configuration Projet</h2>
             <form id="adminForm" class="space-y-4">
-                <input type="text" id="adminClient" required placeholder="Client Name" class="w-full border p-3 rounded-lg">
-                <input type="text" id="adminProject" required placeholder="Project Name" class="w-full border p-3 rounded-lg">
-                <textarea id="adminComp" required placeholder="Composition (items separated by commas)" class="w-full border p-3 rounded-lg h-24"></textarea>
-                <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold uppercase">Créer le projet</button>
+                <input type="text" id="adminClient" required placeholder="Nom du Client" class="w-full border-2 border-slate-50 p-4 rounded-xl focus:border-blue-500 outline-none">
+                <input type="text" id="adminProject" required placeholder="Nom du Projet" class="w-full border-2 border-slate-50 p-4 rounded-xl focus:border-blue-500 outline-none">
+                <textarea id="adminComp" required placeholder="Composition (ex: Backend, CMS, Homepage...)" class="w-full border-2 border-slate-50 p-4 rounded-xl h-24 focus:border-blue-500 outline-none"></textarea>
+                <button type="submit" id="adminSubmitBtn" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-all">
+                    Créer le projet
+                </button>
             </form>
         </div>
     </div>
 
     <script>
+        // URL de votre script Google Apps Script [cite: 58-60]
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysREWfB-QlOxK95hAQwKiqRr1UtaAtI8FCgyy8ZEVnzn6MX5ZIp5-0KJZEpucVtGqS/exec";
         let store = { projects: [], config: {}, bugs: [] };
         let activeProject = null;
 
+        // Initialisation de l'application [cite: 7-9, 56-57]
         async function init() {
-            const resp = await fetch(SCRIPT_URL);
-            store = await resp.json();
-            
-            const select = document.getElementById('initialProjectSelect');
-            select.innerHTML = '<option value="">Choisir un projet...</option>' + 
-                store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
-            
-            // Populate form static fields
-            populateFormFields();
+            try {
+                const response = await fetch(SCRIPT_URL);
+                if (!response.ok) throw new Error("Réponse serveur invalide");
+                store = await response.json();
+                
+                const select = document.getElementById('initialProjectSelect');
+                if (store.projects.length > 0) {
+                    select.innerHTML = '<option value="">Choisir un projet...</option>' + 
+                        store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
+                    
+                    const btn = document.getElementById('btn-enter');
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    select.innerHTML = '<option value="">Aucun projet trouvé</option>';
+                }
+            } catch (err) {
+                console.error("Erreur d'initialisation:", err);
+                document.getElementById('initialProjectSelect').innerHTML = '<option value="">Erreur de connexion</option>';
+            }
         }
 
+        // Navigation vers le dashboard projet [cite: 8-9]
         function enterDashboard() {
             const pName = document.getElementById('initialProjectSelect').value;
             if (!pName) return;
-            activeProject = store.projects.find(p => p.name === pName);
             
+            activeProject = store.projects.find(p => p.name === pName);
             document.getElementById('view-landing').classList.add('hidden');
             document.getElementById('view-dashboard').classList.remove('hidden');
-            document.getElementById('currentProjectTitle').innerText = `${activeProject.client} / ${activeProject.name}`;
+            document.getElementById('currentProjectTitle').innerText = activeProject.client + " / " + activeProject.name;
             
             renderBugList();
-            renderDynamicFormItems();
         }
 
+        // Affichage de la liste des observations [cite: 35-39, 56-57, 64-65]
         function renderBugList() {
             const container = document.getElementById('bugListContainer');
             const projectBugs = store.bugs.filter(b => b.Project === activeProject.name);
             
             if (projectBugs.length === 0) {
-                container.innerHTML = `<div class="text-center py-20 text-slate-400 italic">Aucune observation pour ce projet pour le moment.</div>`;
+                container.innerHTML = '<div class="text-center py-20 text-slate-300 italic font-bold">Aucune observation enregistrée.</div>';
                 return;
             }
 
-            // Ordering by Impact (Vital first) then State 
-            container.innerHTML = projectBugs.map(bug => `
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col md:flex-row gap-6 items-start transition-all hover:shadow-md ${bug.State === 'Solved' ? 'state-solved' : 'impact-' + bug.Impact.toLowerCase()}">
-                    <div class="flex-1 space-y-2">
-                        <div class="flex items-center gap-3">
-                            <span class="px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest">${bug.ID}</span>
-                            <span class="text-xs font-bold text-slate-400">${bug['Date Noticed']}</span>
-                            <span class="px-2 py-0.5 rounded border border-slate-200 text-[10px] font-bold uppercase">${bug.Impact}</span>
-                        </div>
-                        <p class="text-slate-800 font-medium leading-relaxed">${bug.Note || '<span class="italic text-slate-400 text-sm">Aucune note textuelle</span>'}</p>
-                        <div class="flex flex-wrap gap-2 pt-2">
-                            ${bug.Breakpoint.split(',').map(b => `<span class="bg-slate-100 text-slate-500 text-[10px] px-2 py-1 rounded font-bold uppercase">${b.trim()}</span>`).join('')}
-                            <span class="text-[10px] font-black text-blue-600 border border-blue-200 px-2 py-1 rounded uppercase bg-blue-50">${bug.Location}</span>
-                        </div>
-                    </div>
-                    ${bug['Screenshot URL'] !== 'No Image' ? `
-                        <a href="${bug['Screenshot URL']}" target="_blank" class="w-full md:w-32 h-32 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0 group relative">
-                            <img src="${bug['Screenshot URL']}" class="w-full h-full object-cover transition-transform group-hover:scale-110">
-                            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                <span class="text-white text-xs font-bold">Voir Image</span>
+            container.innerHTML = projectBugs.map(bug => {
+                const impactClass = "impact-" + (bug.Impact ? bug.Impact.split(' ')[0].toLowerCase() : "ok");
+                const stateClass = bug.State === 'Solved' ? 'state-solved' : '';
+                
+                return `
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 flex flex-col md:flex-row gap-6 items-start transition-all hover:shadow-xl ${impactClass} ${stateClass}">
+                        <div class="flex-1 space-y-4">
+                            <div class="flex items-center gap-3">
+                                <span class="px-3 py-1 rounded-full bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest">${bug.ID}</span>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">${bug['Date Noticed']}</span>
+                                <span class="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">${bug.Location || 'Général'}</span>
                             </div>
-                        </a>
-                    ` : ''}
-                </div>
-            `).join('');
+                            <p class="text-slate-800 font-bold text-lg leading-tight">${bug.Note || 'Observation sans note'}</p>
+                            <div class="flex flex-wrap gap-2 text-[9px] font-black uppercase text-slate-400 tracking-tighter">
+                                 <span class="border border-slate-100 px-2 py-1 rounded">${bug.Impact}</span>
+                                 <span class="border border-slate-100 px-2 py-1 rounded">Via: ${bug['Noticed By']}</span>
+                            </div>
+                        </div>
+                        ${bug['Screenshot URL'] && bug['Screenshot URL'] !== 'No Image' ? `
+                            <a href="${bug['Screenshot URL']}" target="_blank" class="w-full md:w-32 h-32 rounded-2xl overflow-hidden border border-slate-100 flex-shrink-0 group relative shadow-inner">
+                                <img src="${bug['Screenshot URL']}" class="w-full h-full object-cover transition-transform group-hover:scale-110">
+                                <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                    <span class="text-white text-[8px] font-black uppercase tracking-widest">Voir capture</span>
+                                </div>
+                            </a>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
         }
 
+        // Gestion de l'overlay de rapport [cite: 40-41]
         function toggleOverlay(show) {
             const overlay = document.getElementById('overlay');
             const bg = document.getElementById('overlay-bg');
             if (show) {
+                renderFormFields();
                 bg.classList.remove('hidden');
                 setTimeout(() => {
                     overlay.classList.add('active');
@@ -196,43 +185,55 @@
             }
         }
 
-        // --- Data Population & Form Logic ---
-        function populateFormFields() {
-            document.getElementById('impactSelect').innerHTML = store.config.impacts.map(i => `<option>${i}</option>`).join('');
-            document.getElementById('prioritySelect').innerHTML = store.config.priorities.map(p => `<option>${p}</option>`).join('');
-            document.getElementById('breakpointList').innerHTML = store.config.breakpoints.map(b => `
-                <label class="px-3 py-1 border rounded-full text-xs font-bold cursor-pointer has-[:checked]:bg-blue-600 has-[:checked]:text-white transition-colors">
-                    <input type="checkbox" name="breakpoint" value="${b}" class="hidden"> ${b}
-                </label>
-            `).join('');
-            document.getElementById('stateList').innerHTML = store.config.states.map(s => `
-                <label class="flex items-center gap-2 p-3 border rounded-xl text-sm font-medium cursor-pointer hover:bg-slate-50 transition-colors">
-                    <input type="radio" name="state" value="${s}" required class="w-4 h-4 text-blue-600"> ${s}
-                </label>
-            `).join('');
-            document.getElementById('noticedByList').innerHTML = ["Client (Priorité haute)", "Collaborateur (prestataire)", "LTDA (Nous)"].map(n => `
-                <label class="flex items-center gap-2 p-3 border rounded-xl text-sm font-medium cursor-pointer hover:bg-slate-50 transition-colors">
-                    <input type="radio" name="noticedBy" value="${n}" required class="w-4 h-4 text-blue-600"> ${n}
-                </label>
-            `).join('');
+        // Génération dynamique des champs du formulaire [cite: 16-32, 42-53, 73-81, 84]
+        function renderFormFields() {
+            const content = document.getElementById('formContent');
+            content.innerHTML = `
+                <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Niveau d'impact [cite: 47-53]</label>
+                    <select id="impactSelect" class="w-full border-2 border-slate-50 p-4 rounded-xl font-bold bg-slate-50">${store.config.impacts.map(i => `<option>${i}</option>`).join('')}</select>
+                </div>
+                <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Où dans le projet ? [cite: 80-81]</label>
+                    <div class="grid grid-cols-2 gap-2">${activeProject.composition.map(c => `
+                        <label class="flex items-center gap-2 p-3 border-2 border-slate-50 rounded-xl text-xs font-bold cursor-pointer hover:bg-slate-50 transition-all">
+                            <input type="checkbox" name="location" value="${c}" class="w-4 h-4 text-blue-600"> ${c}
+                        </label>
+                    `).join('')}</div>
+                </div>
+                <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Observation (Note) [cite: 66-68]</label>
+                    <textarea id="bugNote" class="w-full border-2 border-slate-50 p-4 rounded-xl h-32 focus:border-blue-500 outline-none" placeholder="Détails du problème..."></textarea>
+                </div>
+                <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Capture (Optionnelle) [cite: 69-72]</label>
+                    <input type="file" id="screenshot" class="w-full border-2 border-dashed p-4 rounded-xl text-xs">
+                </div>
+                <div class="space-y-3">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Constaté par... [cite: 32]</label>
+                    <div class="space-y-2">${["Client", "Collaborateur", "LTDA"].map(n => `
+                        <label class="flex items-center gap-2 p-3 border-2 border-slate-50 rounded-xl text-xs font-bold cursor-pointer hover:bg-slate-50 transition-all">
+                            <input type="radio" name="noticedBy" value="${n}" required class="w-4 h-4 text-blue-600"> ${n}
+                        </label>
+                    `).join('')}</div>
+                </div>
+            `;
         }
 
-        function renderDynamicFormItems() {
-            document.getElementById('locationGrid').innerHTML = activeProject.composition.map(loc => `
-                <label class="flex items-center gap-2 p-2 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors text-xs font-bold">
-                    <input type="checkbox" name="location" value="${loc}" class="w-4 h-4 rounded text-blue-600"> ${loc}
-                </label>
-            `).join('');
+        // Affichage des différentes vues (Landing/Admin) [cite: 4, 7-8]
+        function showView(viewName) {
+            document.getElementById('view-landing').classList.add('hidden');
+            document.getElementById('view-admin').classList.remove('hidden');
         }
 
-        // Reuse Form Submission from previous version...
+        // Soumission du formulaire de bug [cite: 5, 40-41, 58-60, 66-72, 82-87]
         document.getElementById('bugForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const fileInput = document.getElementById('screenshot');
             const noteInput = document.getElementById('bugNote').value;
 
-            if (!noteInput && fileInput.files.length === 0) return alert("Note ou Screenshot obligatoire."); [cite: 84]
+            if (!noteInput && fileInput.files.length === 0) return alert("Note ou Capture obligatoire.");
 
             btn.disabled = true;
             btn.innerText = "Synchronisation...";
@@ -247,33 +248,51 @@
             }
 
             const payload = {
-                action: "submit_bug",
-                dateNoticed: new Date().toISOString().split('T')[0],
-                commNote: "", 
+                action: "log_bug",
+                dateNoticed: new Date().toLocaleDateString('fr-FR'),
                 client: activeProject.client,
                 project: activeProject.name,
-                noticedBy: document.querySelector('input[name="noticedBy"]:checked').value,
-                state: document.querySelector('input[name="state"]:checked').value,
                 impact: document.getElementById('impactSelect').value,
-                priority: document.getElementById('prioritySelect').value,
-                breakpoints: Array.from(document.querySelectorAll('input[name="breakpoint"]:checked')).map(el => el.value),
-                location: Array.from(document.querySelectorAll('input[name="location"]:checked')).map(el => el.value),
+                location: Array.from(document.querySelectorAll('input[name="location"]:checked')).map(el => el.value).join(', '),
                 note: noteInput,
+                noticedBy: document.querySelector('input[name="noticedBy"]:checked').value,
+                priority: "TBD",
+                breakpoints: "All",
                 imageBlob: imageBlob,
                 imageType: fileInput.files[0]?.type,
                 imageName: fileInput.files[0]?.name
             };
 
+            try {
+                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                alert("Observation enregistrée dans Google Sheets !");
+                location.reload();
+            } catch (err) {
+                alert("Erreur lors de l'envoi.");
+                btn.disabled = false;
+            }
+        };
+
+        // Soumission du formulaire de configuration projet [cite: 34]
+        document.getElementById('adminForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('adminSubmitBtn');
+            btn.disabled = true;
+            btn.innerText = "Création...";
+
+            const payload = {
+                action: "create_project",
+                client: document.getElementById('adminClient').value,
+                project: document.getElementById('adminProject').value,
+                composition: document.getElementById('adminComp').value
+            };
+
             await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-            alert("Enregistré !");
+            alert("Nouveau projet configuré !");
             location.reload();
         };
 
-        function switchTab(tab) {
-            document.getElementById('view-landing').classList.add('hidden');
-            document.getElementById('view-admin').classList.remove('hidden');
-        }
-
+        // Lancement au chargement de la page
         init();
     </script>
 </body>
