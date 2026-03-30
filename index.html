@@ -6,92 +6,75 @@
     <title>LTDA Dashboard PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&family=JetBrains+Mono&display=swap');
         
-        /* Reset global & Typo */
         * { font-family: 'Inter', sans-serif; font-style: normal !important; }
         .mono { font-family: 'JetBrains Mono', monospace; }
         
-        /* Interlettrage pour Majuscules */
-        .uppercase { text-transform: uppercase; letter-spacing: 0.15em; }
-        .font-black.uppercase { letter-spacing: 0.2em; }
+        /* Kerning sélectif : uniquement pour les petits labels */
+        .label-track { text-transform: uppercase; letter-spacing: 0.15em; font-size: 9px; font-weight: 900; }
+        .title-track { letter-spacing: -0.02em; } /* Titres plus serrés */
 
-        /* Couleurs Impact */
         .dot-vital { background-color: #ef4444; }
         .dot-important { background-color: #f59e0b; }
         .dot-ok { background-color: #3b82f6; }
         .dot-solved { background-color: #10b981; }
 
-        /* Lignes compactes */
-        .bug-row { border-bottom: 1px solid #f1f5f9; transition: all 0.15s ease; }
+        .bug-row { border-bottom: 1px solid #f1f5f9; transition: background 0.1s; }
         .bug-row:hover { background-color: #f8fafc; }
         
-        /* Sidebar active */
         .tab-active { background-color: #f1f5f9; color: #000; font-weight: 900; border-left: 4px solid #6b3ce9; }
         
         #overlay { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 200; }
         #overlay.active { transform: translateX(0); }
 
-        /* Thumbnail Zoom */
-        .thumb-zoom { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: zoom-in; position: relative; z-index: 10; }
-        .thumb-zoom:hover { transform: scale(3.5); z-index: 50; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); border-radius: 4px; }
+        /* Méga Zoom Thumbnail */
+        .thumb-container { position: relative; width: 48px; height: 48px; }
+        .thumb-zoom { transition: transform 0.2s ease-in-out, box-shadow 0.2s; cursor: zoom-in; position: absolute; top:0; left:0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #f1f5f9; z-index: 10; }
+        .thumb-zoom:hover { transform: scale(7); z-index: 100; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border-radius: 2px; }
 
-        /* Animations */
-        .landing-card { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .landing-card { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-white text-slate-900 overflow-x-hidden">
 
-    <div id="view-landing" class="fixed inset-0 z-[300] flex items-center justify-center bg-[#fdfdff] p-6">
-        <div class="landing-card bg-white p-10 md:p-16 rounded-[3rem] shadow-[0_30px_100px_rgba(0,0,0,0.06)] max-w-md w-full text-center space-y-12 border border-slate-50">
-            <div class="flex justify-center">
-                <img src="Plan de travail 1.svg" alt="LTDA Logo" style="height: 120px; width: auto;">
-            </div>
-            <div class="space-y-3">
-                <h1 class="text-2xl font-[900] uppercase text-slate-900">Feedback Hub</h1>
-                <p class="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Production Tracking</p>
-            </div>
+    <div id="view-landing" class="fixed inset-0 z-[300] flex items-center justify-center bg-[#fdfdff] p-6 text-center">
+        <div class="landing-card bg-white p-12 rounded-[3rem] shadow-2xl border border-slate-50 max-w-md w-full space-y-10">
+            <img src="Plan de travail 1.svg" alt="LTDA" class="h-24 mx-auto">
             <div class="space-y-4">
-                <select id="initialProjectSelect" class="w-full border-2 border-slate-100 rounded-2xl p-5 focus:border-[#6b3ce9] outline-none font-black uppercase text-[11px] bg-slate-50 appearance-none text-center cursor-pointer transition-all">
+                <select id="initialProjectSelect" class="w-full border-2 border-slate-100 rounded-2xl p-5 font-black uppercase text-[10px] label-track bg-slate-50 outline-none appearance-none text-center cursor-pointer transition-all">
                     <option value="">Chargement...</option>
                 </select>
-                <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-[#6b3ce9] text-white font-black py-5 rounded-2xl hover:bg-black transition-all opacity-50 cursor-not-allowed uppercase text-xs shadow-xl">
-                    Ouvrir le projet
-                </button>
+                <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-[#6b3ce9] text-white font-black py-5 rounded-2xl hover:bg-black transition-all opacity-50 cursor-not-allowed uppercase text-[10px] label-track shadow-xl">Ouvrir le projet</button>
             </div>
         </div>
     </div>
 
     <div id="view-dashboard" class="hidden flex flex-col min-h-screen">
         <header class="bg-white border-b border-slate-100 sticky top-0 z-30 px-8 h-20 flex justify-between items-center">
-            <div class="flex items-center gap-10">
+            <div class="flex items-center gap-8">
                 <div class="flex items-center gap-3">
-                    <img src="Plan de travail 1.svg" style="height: 35px;" alt="">
-                    <h2 id="currentProjectTitle" class="text-lg font-black uppercase tracking-widest">Projet</h2>
+                    <img src="Plan de travail 1.svg" class="h-10" alt="">
+                    <h2 id="currentProjectTitle" class="text-xl font-black uppercase title-track">Projet</h2>
                 </div>
-                <nav class="hidden lg:flex gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100">
-                    <select id="sortSelect" onchange="renderBugList()" class="bg-transparent text-[9px] font-black uppercase tracking-[0.2em] outline-none px-4 cursor-pointer">
-                        <option value="id">Ordre Chrono</option>
-                        <option value="impact">Par Impact</option>
-                        <option value="state">Par État</option>
-                    </select>
-                </nav>
+                <select id="sortSelect" onchange="renderBugList()" class="hidden lg:block bg-slate-50 border border-slate-100 text-[9px] font-black uppercase label-track rounded-xl px-4 py-2 outline-none cursor-pointer">
+                    <option value="id">Chrono</option>
+                    <option value="impact">Impact</option>
+                    <option value="state">État</option>
+                </select>
             </div>
             <div class="flex items-center gap-6">
-                <button onclick="location.reload()" class="text-[9px] font-black uppercase text-slate-300 hover:text-black transition-colors">Changer de client</button>
-                <button onclick="toggleOverlay(true)" class="bg-[#6b3ce9] text-white px-8 py-3 rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-lg">+ Nouveau Retour</button>
+                <button onclick="location.reload()" class="label-track text-slate-300 hover:text-black transition-colors">Changer</button>
+                <button onclick="toggleOverlay(true)" class="bg-[#6b3ce9] text-white px-8 py-3 rounded-full label-track hover:bg-black transition-all shadow-lg">+ Nouveau</button>
             </div>
         </header>
 
         <div class="flex flex-1">
             <aside class="w-64 bg-white border-r border-slate-100 sticky top-20 h-[calc(100vh-5rem)] p-6 hidden md:block">
-                <p class="text-[9px] font-black text-slate-300 uppercase tracking-[0.4em] mb-10 px-4">Breakpoints</p>
+                <p class="label-track text-slate-300 mb-4 px-4">Breakpoints</p>
                 <nav id="breakpointTabs" class="space-y-1">
-                    <button onclick="filterByBreakpoint('all')" class="w-full text-left px-5 py-4 rounded-xl text-[10px] font-black uppercase transition-all tab-active tracking-widest" id="tab-all">Toutes les vues</button>
+                    <button onclick="filterByBreakpoint('all')" class="w-full text-left px-5 py-3 rounded-xl label-track tab-active" id="tab-all">Toutes les vues</button>
                 </nav>
             </aside>
 
@@ -102,14 +85,14 @@
     </div>
 
     <div id="overlay-bg" class="fixed inset-0 bg-slate-900/10 backdrop-blur-md z-[150] hidden opacity-0 transition-opacity" onclick="toggleOverlay(false)"></div>
-    <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-lg bg-white z-[200] shadow-2xl overflow-y-auto p-12">
-        <div class="flex justify-between items-center mb-12">
-            <h2 class="text-2xl font-black uppercase tracking-widest">Nouveau Rapport</h2>
+    <div id="overlay" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white z-[200] shadow-2xl overflow-y-auto p-12">
+        <div class="flex justify-between items-center mb-10">
+            <h2 id="formTitle" class="text-2xl font-black uppercase tracking-tight">Rapport</h2>
             <button onclick="toggleOverlay(false)" class="text-slate-200 text-5xl hover:text-black">&times;</button>
         </div>
         <form id="bugForm" class="space-y-8 pb-10">
             <div id="formContent" class="space-y-8"></div>
-            <button type="submit" id="submitBtn" class="w-full bg-[#6b3ce9] text-white font-black py-6 rounded-3xl hover:bg-black transition-all uppercase tracking-[0.3em] shadow-xl text-xs">Confirmer l'envoi</button>
+            <button type="submit" id="submitBtn" class="w-full bg-[#6b3ce9] text-white font-black py-6 rounded-3xl hover:bg-black transition-all label-track shadow-xl">Confirmer</button>
         </form>
     </div>
 
@@ -118,6 +101,7 @@
         let store = { projects: [], config: {}, bugs: [] };
         let activeProject = null;
         let currentFilter = 'all';
+        let editingId = null; // Stocke l'ID si on édite
 
         const IMPACT_MAP = { "Vital": 4, "Important": 3, "OK": 2, "Optimisation": 1 };
         const ICONS = { "Widescreen": "🖥️", "Desktop": "💻", "Tablet": "📟", "Mobile (L)": "📱", "Mobile": "🤳" };
@@ -127,8 +111,7 @@
             try {
                 const d = new Date(str);
                 if (isNaN(d.getTime())) return str;
-                return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}) + " " + 
-                       d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+                return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}) + " " + d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
             } catch(e) { return str; }
         }
 
@@ -138,7 +121,7 @@
             try {
                 if (url.includes('id=')) id = url.split('id=')[1].split('&')[0];
                 else if (url.includes('/d/')) id = url.split('/d/')[1].split('/')[0];
-                return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w300` : null;
+                return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w400` : null;
             } catch(e) { return null; }
         }
 
@@ -147,19 +130,15 @@
                 const resp = await fetch(SCRIPT_URL);
                 store = await resp.json();
                 const select = document.getElementById('initialProjectSelect');
-                select.innerHTML = '<option value="">Sélectionner Projet</option>' + 
-                    store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
-                
+                select.innerHTML = '<option value="">Choisir Projet</option>' + store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
                 const tabs = document.getElementById('breakpointTabs');
                 store.config.breakpoints.forEach(bp => {
                     const btn = document.createElement('button');
-                    btn.className = "w-full text-left px-5 py-4 rounded-xl text-[10px] font-black text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest";
-                    btn.id = `tab-${bp}`;
-                    btn.innerHTML = `${ICONS[bp] || '🌐'} ${bp}`;
+                    btn.className = "w-full text-left px-5 py-3 rounded-xl label-track text-slate-400 hover:bg-slate-50 transition-all";
+                    btn.id = `tab-${bp}`; btn.innerHTML = `${ICONS[bp] || '🌐'} ${bp}`;
                     btn.onclick = () => filterByBreakpoint(bp);
                     tabs.appendChild(btn);
                 });
-
                 document.getElementById('btn-enter').disabled = false;
                 document.getElementById('btn-enter').classList.remove('opacity-50', 'cursor-not-allowed');
             } catch (err) { console.error(err); }
@@ -186,10 +165,7 @@
             const container = document.getElementById('bugListContainer');
             const sortBy = document.getElementById('sortSelect').value;
             let projectBugs = (store.bugs || []).filter(b => b.Project === activeProject.name);
-            
-            if (currentFilter !== 'all') {
-                projectBugs = projectBugs.filter(b => b.Breakpoint && b.Breakpoint.includes(currentFilter));
-            }
+            if (currentFilter !== 'all') projectBugs = projectBugs.filter(b => b.Breakpoint && b.Breakpoint.includes(currentFilter));
             
             projectBugs.sort((a, b) => {
                 if (sortBy === 'impact') return (IMPACT_MAP[b.Impact] || 0) - (IMPACT_MAP[a.Impact] || 0);
@@ -203,30 +179,26 @@
                 const dotClass = isSolved ? 'dot-solved' : 'dot-' + (bug.Impact || "ok").toLowerCase().split(' ')[0];
                 const thumb = getDriveThumb(bug['Screenshot URL']);
                 const bpIcons = (bug.Breakpoint || "").split(',').map(bp => ICONS[bp.trim()] || "").join('');
-                const timestamp = bug.Timestamp || bug.timestamp;
 
                 return `
                     <div class="bug-row p-5 flex items-center gap-8 ${isSolved ? 'opacity-30' : ''}">
                         <div class="w-3 h-3 rounded-full flex-shrink-0 ${dotClass}"></div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-4 mb-2">
-                                <span class="mono text-[10px] font-bold text-slate-300 uppercase">${bug.ID}</span>
-                                ${isClient ? `<span class="bg-amber-100 text-amber-600 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-[0.2em] border border-amber-200">Client</span>` : ''}
-                                <span class="text-[10px] font-black text-[#6b3ce9] bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-widest">${bug.Location || 'GÉNÉRAL'}</span>
-                                <span class="text-[10px] text-slate-300 font-bold ml-auto">${formatDateTime(timestamp)}</span>
+                                <span class="mono text-[10px] font-bold text-slate-300 uppercase tracking-normal">${bug.ID}</span>
+                                ${isClient ? `<span class="bg-amber-100 text-amber-600 label-track px-2 py-0.5 rounded border border-amber-200">Client</span>` : ''}
+                                <span class="text-indigo-600 bg-indigo-50 label-track px-2 py-0.5 rounded">${bug.Location || 'GÉNÉRAL'}</span>
+                                <span class="text-[10px] text-slate-300 font-bold ml-auto">${formatDateTime(bug.Timestamp || bug.timestamp)}</span>
                             </div>
-                            <p class="text-sm font-bold text-slate-800 leading-tight truncate cursor-default" title="${bug.Note}">${bug.Note || 'Sans description'}</p>
+                            <p class="text-sm font-medium text-slate-600 leading-tight truncate cursor-default" title="${bug.Note}">${bug.Note || 'Sans description'}</p>
                         </div>
-                        <div class="flex items-center gap-10 flex-shrink-0">
-                            <div class="text-xl flex gap-4 opacity-60">${bpIcons}</div>
-                            ${thumb ? `
-                                <div class="relative w-12 h-12">
-                                    <a href="${bug['Screenshot URL']}" target="_blank" class="block w-full h-full rounded-xl overflow-hidden border border-slate-100 thumb-zoom">
-                                        <img src="${thumb}" class="w-full h-full object-cover">
-                                    </a>
-                                </div>
-                            ` : `<div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[9px] text-slate-200 font-black tracking-widest">NONE</div>`}
-                            <div class="flex gap-2">
+                        <div class="flex items-center gap-12 flex-shrink-0">
+                            <div class="text-xl flex gap-6 opacity-60">${bpIcons}</div>
+                            <div class="thumb-container">
+                                ${thumb ? `<img src="${thumb}" onclick="window.open('${bug['Screenshot URL']}', '_blank')" class="thumb-zoom shadow-sm">` : `<div class="w-full h-full rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] label-track text-slate-200">NONE</div>`}
+                            </div>
+                            <div class="flex gap-1">
+                                <button onclick="openEdit('${bug.ID}')" class="p-2 text-slate-200 hover:text-blue-500 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                                 <button onclick="solveBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-green-500 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                                 <button onclick="deleteBug('${bug.ID}')" class="p-2 text-slate-200 hover:text-red-500 transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                             </div>
@@ -236,6 +208,7 @@
             }).join('');
         }
 
+        // --- ACTIONS ---
         async function solveBug(id) {
             const bug = store.bugs.find(b => b.ID === id);
             if (bug) bug.State = "Solved";
@@ -244,61 +217,69 @@
         }
 
         async function deleteBug(id) {
-            if(!confirm("Supprimer ?")) return;
+            // Suppression simplifiée sans popup confirm native pour éviter le blocage
             store.bugs = store.bugs.filter(b => b.ID !== id);
             renderBugList();
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete_bug", id: id }) });
         }
 
-        function toggleOverlay(show) {
+        function openEdit(id) {
+            const bug = store.bugs.find(b => b.ID === id);
+            editingId = id;
+            toggleOverlay(true, bug);
+        }
+
+        function toggleOverlay(show, bug = null) {
             const overlay = document.getElementById('overlay');
             const bg = document.getElementById('overlay-bg');
             if (show) {
-                renderFormFields();
+                renderFormFields(bug);
+                document.getElementById('formTitle').innerText = bug ? "Modifier le retour" : "Nouveau Rapport";
                 bg.classList.remove('hidden');
                 setTimeout(() => { overlay.classList.add('active'); bg.classList.add('opacity-100'); }, 10);
             } else {
+                editingId = null;
                 overlay.classList.remove('active'); bg.classList.remove('opacity-100');
                 setTimeout(() => bg.classList.add('hidden'), 300);
             }
         }
 
-        function renderFormFields() {
+        function renderFormFields(bug = null) {
+            const impacts = store.config.impacts.map(i => `<option ${bug && bug.Impact === i ? 'selected' : ''}>${i}</option>`).join('');
+            const priorities = store.config.priorities.map(p => `<option ${bug && bug.Priority === p ? 'selected' : ''}>${p}</option>`).join('');
+            
             document.getElementById('formContent').innerHTML = `
                 <div class="grid grid-cols-2 gap-6">
                     <div class="space-y-1">
-                        <label class="text-[9px] font-black uppercase text-slate-300 tracking-[0.3em]">Impact</label>
-                        <select id="impactSelect" class="w-full border-2 p-4 rounded-2xl font-black uppercase text-[10px] bg-slate-50 focus:border-[#6b3ce9] outline-none transition-all">${store.config.impacts.map(i => `<option>${i}</option>`).join('')}</select>
+                        <label class="label-track text-slate-300">Impact</label>
+                        <select id="impactSelect" class="w-full border-2 p-4 rounded-2xl font-black text-[10px] bg-slate-50 outline-none">${impacts}</select>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[9px] font-black uppercase text-slate-300 tracking-[0.3em]">Timing</label>
-                        <select id="prioritySelect" class="w-full border-2 p-4 rounded-2xl font-black uppercase text-[10px] bg-slate-50 focus:border-[#6b3ce9] outline-none transition-all">${store.config.priorities.map(p => `<option>${p}</option>`).join('')}</select>
+                        <label class="label-track text-slate-300">Timing</label>
+                        <select id="prioritySelect" class="w-full border-2 p-4 rounded-2xl font-black text-[10px] bg-slate-50 outline-none">${priorities}</select>
                     </div>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[9px] font-black uppercase text-slate-300 tracking-[0.3em]">Zone</label>
+                    <label class="label-track text-slate-300">Zone</label>
                     <div class="grid grid-cols-2 gap-3">${activeProject.composition.map(c => `
-                        <label class="flex items-center gap-3 p-4 border-2 rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-slate-50 has-[:checked]:bg-indigo-50 has-[:checked]:border-indigo-200 transition-all">
-                            <input type="checkbox" name="location" value="${c}" class="w-4 h-4 text-[#6b3ce9]"> ${c}
+                        <label class="flex items-center gap-3 p-4 border-2 rounded-2xl label-track cursor-pointer has-[:checked]:bg-indigo-50 transition-all">
+                            <input type="checkbox" name="location" value="${c}" class="w-4 h-4 text-[#6b3ce9]" ${bug && bug.Location.includes(c) ? 'checked' : ''}> ${c}
                         </label>
                     `).join('')}</div>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[9px] font-black uppercase text-slate-300 tracking-[0.3em]">Breakpoints</label>
+                    <label class="label-track text-slate-300">Breakpoints</label>
                     <div class="flex flex-wrap gap-3">${store.config.breakpoints.map(b => `
-                        <label class="flex items-center gap-3 p-4 border-2 rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-slate-50 has-[:checked]:bg-black has-[:checked]:text-white transition-all">
-                            <input type="checkbox" name="breakpoint" value="${b}" class="hidden"> ${ICONS[b] || ''} ${b}
+                        <label class="flex items-center gap-3 p-4 border-2 rounded-2xl label-track cursor-pointer has-[:checked]:bg-black has-[:checked]:text-white transition-all">
+                            <input type="checkbox" name="breakpoint" value="${b}" class="hidden" ${bug && bug.Breakpoint.includes(b) ? 'checked' : ''}> ${ICONS[b] || ''} ${b}
                         </label>
                     `).join('')}</div>
                 </div>
-                <textarea id="bugNote" class="w-full border-2 p-6 rounded-[2rem] h-32 focus:border-[#6b3ce9] outline-none bg-slate-50 font-medium text-sm" placeholder="Détails du problème..."></textarea>
-                <div class="space-y-1">
-                    <label class="text-[9px] font-black uppercase text-slate-300 tracking-[0.3em]">Capture</label>
-                    <input type="file" id="screenshot" accept="image/*" class="w-full border-2 border-dashed p-6 rounded-2xl text-[10px] font-black uppercase">
-                </div>
+                <textarea id="bugNote" class="w-full border-2 p-6 rounded-[2rem] h-32 focus:border-[#6b3ce9] outline-none bg-slate-50 font-medium text-sm" placeholder="Détails du problème...">${bug ? bug.Note : ''}</textarea>
+                ${!bug ? `<div class="space-y-1"><label class="label-track text-slate-300">Capture</label><input type="file" id="screenshot" accept="image/*" class="w-full border-2 border-dashed p-6 rounded-2xl label-track"></div>` : ''}
                 <div class="flex gap-3">${["Client", "Collaborateur", "LTDA"].map(n => `
-                    <label class="flex-1 text-center p-4 border-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] cursor-pointer has-[:checked]:bg-[#6b3ce9] has-[:checked]:text-white transition-all">
-                        <input type="radio" name="noticedBy" value="${n}" class="hidden" required> ${n}
+                    <label class="flex-1 text-center p-4 border-2 rounded-2xl label-track cursor-pointer has-[:checked]:bg-[#6b3ce9] has-[:checked]:text-white transition-all">
+                        <input type="radio" name="noticedBy" value="${n}" class="hidden" required ${bug && bug['Noticed By'] === n ? 'checked' : (!bug && n === 'Collaborateur' ? 'checked' : '')}> ${n}
                     </label>
                 `).join('')}</div>
             `;
@@ -307,56 +288,40 @@
         document.getElementById('bugForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            const fileInput = document.getElementById('screenshot');
-            btn.disabled = true;
-            btn.innerText = "Synchronisation...";
-
-            const now = new Date();
-            const tempBug = {
-                ID: "LTDA-...",
-                Project: activeProject.name,
-                Note: document.getElementById('bugNote').value,
-                Location: Array.from(document.querySelectorAll('input[name="location"]:checked')).map(el => el.value).join(', '),
-                Breakpoint: Array.from(document.querySelectorAll('input[name="breakpoint"]:checked')).map(el => el.value).join(', '),
-                Impact: document.getElementById('impactSelect').value,
-                Priority: document.getElementById('prioritySelect').value,
-                Timestamp: now.toISOString(),
-                "Noticed By": document.querySelector('input[name="noticedBy"]:checked').value,
-                State: "Not solved"
-            };
-
-            store.bugs.unshift(tempBug);
-            renderBugList();
-            toggleOverlay(false);
-
-            let imageBlob = null;
-            if (fileInput.files.length > 0) {
-                imageBlob = await new Promise(r => {
-                    const reader = new FileReader();
-                    reader.onload = () => r(reader.result);
-                    reader.readAsDataURL(fileInput.files[0]);
-                });
-            }
+            btn.disabled = true; btn.innerText = "Synchronisation...";
 
             const payload = {
-                action: "log_bug",
-                dateNoticed: now.toLocaleDateString('fr-FR'),
-                client: activeProject.client, project: activeProject.name,
-                impact: tempBug.Impact, priority: tempBug.Priority,
-                location: tempBug.Location, breakpoints: tempBug.Breakpoint,
-                note: tempBug.Note, noticedBy: tempBug["Noticed By"],
-                imageBlob: imageBlob, imageType: fileInput.files[0]?.type, imageName: fileInput.files[0]?.name
+                action: editingId ? "edit_bug" : "log_bug",
+                id: editingId,
+                note: document.getElementById('bugNote').value,
+                location: Array.from(document.querySelectorAll('input[name="location"]:checked')).map(el => el.value).join(', '),
+                breakpoints: Array.from(document.querySelectorAll('input[name="breakpoint"]:checked')).map(el => el.value).join(', '),
+                impact: document.getElementById('impactSelect').value,
+                priority: document.getElementById('prioritySelect').value,
+                noticedBy: document.querySelector('input[name="noticedBy"]:checked').value,
             };
 
-            try {
-                const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const result = await response.json();
-                if(result.status === "success") {
-                    tempBug.ID = result.id;
-                    renderBugList();
+            if (!editingId) {
+                const fileInput = document.getElementById('screenshot');
+                if (fileInput.files.length > 0) {
+                    payload.imageBlob = await new Promise(r => { const reader = new FileReader(); reader.onload = () => r(reader.result); reader.readAsDataURL(fileInput.files[0]); });
+                    payload.imageType = fileInput.files[0].type; payload.imageName = fileInput.files[0].name;
                 }
-            } catch(e) { console.log("Sync background ok"); }
+                payload.client = activeProject.client; payload.project = activeProject.name;
+                payload.dateNoticed = new Date().toLocaleDateString('fr-FR');
+            }
 
+            // Optimistic UI Update
+            if (editingId) {
+                const b = store.bugs.find(x => x.ID === editingId);
+                Object.assign(b, payload);
+            } else {
+                store.bugs.unshift({...payload, ID: "LTDA-...", State: "Not solved", Timestamp: new Date().toISOString()});
+            }
+            
+            renderBugList();
+            toggleOverlay(false);
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
             btn.disabled = false;
         };
 
