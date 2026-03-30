@@ -5,21 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LTDA Dashboard PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Couleurs d'impact basées sur ton plan */
         .impact-vital { border-left: 12px solid #ef4444 !important; background: #fff1f2; }
         .impact-important { border-left: 12px solid #f97316 !important; background: #fff7ed; }
         .impact-ok { border-left: 12px solid #3b82f6 !important; background: #eff6ff; }
-        .state-solved { opacity: 0.5; filter: grayscale(1); border-left: 12px solid #22c55e !important; }
+        .impact-optimisation { border-left: 12px solid #94a3b8 !important; background: #f8fafc; }
+        
+        /* État résolu */
+        .state-solved { opacity: 0.5; filter: grayscale(1); border-left: 12px solid #22c55e !important; background: #f0fdf4 !important; }
+        
+        /* Animation de l'overlay */
         #overlay { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 100; }
         #overlay.active { transform: translateX(0); }
+        
+        /* Animation de la pill de synchro */
+        @keyframes pulse-black {
+            0%, 100% { background-color: #000; }
+            50% { background-color: #444; }
+        }
+        .animate-sync { animation: pulse-black 1.5s infinite; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans text-slate-900 overflow-x-hidden">
+<body class="bg-slate-50 min-h-screen text-slate-900 overflow-x-hidden">
 
     <div id="view-landing" class="flex items-center justify-center min-h-screen p-6">
         <div class="bg-white p-12 rounded-[3rem] shadow-2xl border border-slate-100 max-w-md w-full text-center space-y-8">
             <h1 class="text-4xl font-black uppercase tracking-tighter text-blue-600 italic">LTDA</h1>
-            <select id="initialProjectSelect" class="w-full border-4 border-slate-50 rounded-3xl p-5 focus:border-blue-500 outline-none bg-slate-50 font-bold text-center text-lg appearance-none"></select>
+            <select id="initialProjectSelect" class="w-full border-4 border-slate-50 rounded-3xl p-5 focus:border-blue-500 outline-none bg-slate-50 font-bold text-center text-lg appearance-none">
+                <option value="">Connexion au Google Sheet...</option>
+            </select>
             <button onclick="enterDashboard()" id="btn-enter" disabled class="w-full bg-blue-600 text-white font-black py-6 rounded-3xl hover:bg-blue-700 transition-all opacity-50 cursor-not-allowed uppercase tracking-widest shadow-xl shadow-blue-100">
                 Accéder au suivi
             </button>
@@ -34,11 +55,11 @@
             </div>
 
             <div class="flex items-center gap-3 bg-slate-100 p-2 rounded-2xl border border-slate-200">
-                <span class="text-[9px] font-black uppercase px-2 text-slate-400">Trier :</span>
+                <span class="text-[9px] font-black uppercase px-2 text-slate-400 font-bold">Trier :</span>
                 <select id="sortSelect" onchange="renderBugList()" class="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer font-bold">
                     <option value="impact">Impact (Priorité)</option>
                     <option value="ID">Plus récent</option>
-                    <option value="state">État</option>
+                    <option value="State">État</option>
                 </select>
             </div>
 
@@ -47,7 +68,8 @@
             </button>
         </header>
 
-        <main class="max-w-4xl mx-auto p-6 md:p-10 space-y-4" id="bugListContainer"></main>
+        <main class="max-w-4xl mx-auto p-6 md:p-10 space-y-4" id="bugListContainer">
+            </main>
     </div>
 
     <div id="overlay-bg" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] hidden opacity-0 transition-opacity" onclick="toggleOverlay(false)"></div>
@@ -57,7 +79,8 @@
             <button onclick="toggleOverlay(false)" class="text-slate-300 text-5xl hover:text-black">&times;</button>
         </div>
         <form id="bugForm" class="space-y-8 pb-10">
-            <div id="formContent" class="space-y-8"></div>
+            <div id="formContent" class="space-y-8">
+                </div>
             <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-black py-6 rounded-3xl hover:bg-blue-700 shadow-2xl transition-all uppercase tracking-widest text-lg">
                 Enregistrer l'Observation
             </button>
@@ -72,6 +95,7 @@
         const IMPACT_MAP = { "Vital": 4, "Important": 3, "OK": 2, "Optimisation": 1 };
         const ICONS = { "Widescreen": "🖥️", "Desktop": "💻", "Tablet": "📟", "Mobile (L)": "📱", "Mobile (V)": "🤳" };
 
+        // INITIALISATION
         async function init() {
             try {
                 const resp = await fetch(SCRIPT_URL);
@@ -81,7 +105,10 @@
                     store.projects.map(p => `<option value="${p.name}">${p.client} — ${p.name}</option>`).join('');
                 document.getElementById('btn-enter').disabled = false;
                 document.getElementById('btn-enter').classList.remove('opacity-50', 'cursor-not-allowed');
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error("Erreur de connexion", err);
+                document.getElementById('initialProjectSelect').innerHTML = '<option>Erreur de connexion au Sheet</option>';
+            }
         }
 
         function enterDashboard() {
@@ -94,6 +121,7 @@
             renderBugList();
         }
 
+        // AFFICHAGE DE LA LISTE
         function renderBugList() {
             const container = document.getElementById('bugListContainer');
             const sortBy = document.getElementById('sortSelect').value;
@@ -101,7 +129,7 @@
             
             projectBugs.sort((a, b) => {
                 if (sortBy === 'impact') return (IMPACT_MAP[b.Impact] || 0) - (IMPACT_MAP[a.Impact] || 0);
-                if (sortBy === 'state') return (a.State === 'Solved' ? 1 : -1);
+                if (sortBy === 'State') return (a.State === 'Solved' ? 1 : -1);
                 return String(b[sortBy]).localeCompare(String(a[sortBy]));
             });
 
@@ -112,30 +140,38 @@
 
             container.innerHTML = projectBugs.map(bug => {
                 const isSolved = bug.State === 'Solved';
-                const impactClass = isSolved ? 'state-solved' : 'impact-' + (bug.Impact || "").toLowerCase().split(' ')[0];
+                const isSyncing = bug.ID === "TEMP";
+                const impactClass = isSolved ? 'state-solved' : 'impact-' + (bug.Impact || "ok").toLowerCase().split(' ')[0];
                 const bpIcons = (bug.Breakpoint || "").split(',').map(bp => ICONS[bp.trim()] || "🌐").join(' ');
 
                 return `
-                    <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8 flex justify-between items-start gap-6 transition-all hover:shadow-xl ${impactClass}">
+                    <div id="card-${bug.ID}" class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 p-8 flex justify-between items-start gap-6 transition-all hover:shadow-xl ${impactClass}">
                         <div class="flex-1 space-y-4">
                             <div class="flex items-center gap-4">
-                                <span class="px-3 py-1 rounded-full bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest">${bug.ID}</span>
+                                <span class="px-3 py-1 rounded-full ${isSyncing ? 'animate-sync bg-black text-white' : 'bg-slate-200 text-slate-500'} text-[9px] font-black uppercase tracking-widest">
+                                    ${isSyncing ? 'Sync en cours...' : bug.ID}
+                                </span>
                                 <span class="text-lg">${bpIcons}</span>
-                                <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">${bug.Location}</span>
+                                <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">${bug.Location || 'Général'}</span>
                             </div>
                             <p class="text-slate-900 font-bold text-xl leading-tight">${bug.Note || 'Sans note'}</p>
                             <details class="group">
                                 <summary class="list-none text-[10px] font-black text-slate-300 uppercase cursor-pointer hover:text-blue-600 tracking-widest outline-none">Détails +</summary>
                                 <div class="pt-6 grid grid-cols-2 gap-6 border-t mt-6 border-slate-50 text-[10px] uppercase font-bold tracking-tight">
                                     <div><span class="text-slate-400 block text-[8px] mb-1">Impact</span>${bug.Impact}</div>
-                                    <div><span class="text-slate-400 block text-[8px] mb-1">Priorité</span>${bug.Priority}</div>
+                                    <div><span class="text-slate-400 block text-[8px] mb-1">Échéance</span>${bug.Priority}</div>
                                     <div><span class="text-slate-400 block text-[8px] mb-1">Par</span>${bug['Noticed By']}</div>
                                     <div><span class="text-slate-400 block text-[8px] mb-1">Date</span>${bug['Date Noticed']}</div>
                                 </div>
                             </details>
                         </div>
                         <div class="flex flex-col gap-3 items-end">
-                            ${!isSolved ? `<button onclick="solveBug('${bug.ID}')" class="bg-green-500 text-white px-5 py-2 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-green-100">Fixé</button>` : '<span class="text-green-600 font-black uppercase text-[10px]">Résolu</span>'}
+                            <div class="flex gap-2">
+                                <button onclick="deleteBug('${bug.ID}')" class="p-2 text-slate-300 hover:text-red-500 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                ${!isSolved ? `<button onclick="solveBug('${bug.ID}')" class="bg-green-500 text-white px-5 py-2 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-green-100">Fixé</button>` : '<span class="text-green-600 font-black uppercase text-[10px]">Résolu</span>'}
+                            </div>
                             ${bug['Screenshot URL'] && bug['Screenshot URL'] !== 'No Image' ? `<a href="${bug['Screenshot URL']}" target="_blank" class="w-16 h-16 rounded-2xl overflow-hidden border border-slate-100 block hover:scale-110 transition-transform"><img src="${bug['Screenshot URL']}" class="w-full h-full object-cover"></a>` : ''}
                         </div>
                     </div>
@@ -143,6 +179,7 @@
             }).join('');
         }
 
+        // ACTIONS : SOLVE & DELETE
         async function solveBug(id) {
             const bug = store.bugs.find(b => b.ID === id);
             if (bug) bug.State = "Solved";
@@ -150,6 +187,14 @@
             await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "update_bug", id: id, newState: "Solved" }) });
         }
 
+        async function deleteBug(id) {
+            if(!confirm("Supprimer définitivement cette observation ?")) return;
+            store.bugs = store.bugs.filter(b => b.ID !== id);
+            renderBugList();
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete_bug", id: id }) });
+        }
+
+        // OVERLAY & FORMULAIRE
         function toggleOverlay(show) {
             const overlay = document.getElementById('overlay');
             const bg = document.getElementById('overlay-bg');
@@ -167,16 +212,16 @@
             document.getElementById('formContent').innerHTML = `
                 <div class="grid grid-cols-2 gap-6">
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Impact</label>
+                        <label class="text-[10px] font-black uppercase text-slate-400">Impact</label>
                         <select id="impactSelect" class="w-full border-2 p-4 rounded-xl font-bold bg-slate-50 focus:border-blue-500">${store.config.impacts.map(i => `<option>${i}</option>`).join('')}</select>
                     </div>
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Échéance</label>
+                        <label class="text-[10px] font-black uppercase text-slate-400">Échéance</label>
                         <select id="prioritySelect" class="w-full border-2 p-4 rounded-xl font-bold bg-slate-50 focus:border-blue-500">${store.config.priorities.map(p => `<option>${p}</option>`).join('')}</select>
                     </div>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Zone</label>
+                    <label class="text-[10px] font-black uppercase text-slate-400">Zone du projet</label>
                     <div class="grid grid-cols-2 gap-2">${activeProject.composition.map(c => `
                         <label class="flex items-center gap-2 p-3 border-2 rounded-xl text-xs font-bold cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
                             <input type="checkbox" name="location" value="${c}" class="w-4 h-4 text-blue-600"> ${c}
@@ -184,7 +229,7 @@
                     `).join('')}</div>
                 </div>
                 <div class="space-y-2">
-                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Breakpoints</label>
+                    <label class="text-[10px] font-black uppercase text-slate-400">Breakpoints</label>
                     <div class="flex flex-wrap gap-2">${store.config.breakpoints.map(b => `
                         <label class="flex items-center gap-2 p-3 border-2 rounded-xl text-[10px] font-black uppercase cursor-pointer has-[:checked]:bg-slate-900 has-[:checked]:text-white">
                             <input type="checkbox" name="breakpoint" value="${b}" class="hidden"> ${ICONS[b] || ''} ${b}
@@ -201,6 +246,7 @@
             `;
         }
 
+        // ENVOI DU FORMULAIRE
         document.getElementById('bugForm').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -209,31 +255,25 @@
             btn.innerText = "Synchronisation...";
 
             const dateStr = new Date().toLocaleDateString('fr-FR');
-            
-            // On prépare l'objet pour l'affichage immédiat (clés en MAJUSCULES pour correspondre au Sheet)
             const tempBug = {
-                ID: "LTDA-TEMP",
-                "Date Noticed": dateStr,
-                Client: activeProject.client,
+                ID: "TEMP",
                 Project: activeProject.name,
-                Impact: document.getElementById('impactSelect').value,
-                Priority: document.getElementById('prioritySelect').value,
+                Note: document.getElementById('bugNote').value,
                 Location: Array.from(document.querySelectorAll('input[name="location"]:checked')).map(el => el.value).join(', '),
                 Breakpoint: Array.from(document.querySelectorAll('input[name="breakpoint"]:checked')).map(el => el.value).join(', '),
-                Note: document.getElementById('bugNote').value,
+                Impact: document.getElementById('impactSelect').value,
+                Priority: document.getElementById('prioritySelect').value,
+                "Date Noticed": dateStr,
                 "Noticed By": document.querySelector('input[name="noticedBy"]:checked').value,
-                State: "Not solved",
-                "Screenshot URL": fileInput.files.length > 0 ? "No Image" : "No Image"
+                State: "Not solved"
             };
 
-            // ÉTAPE CRUCIALE : On injecte manuellement dans store.bugs
+            // Ajout immédiat à l'écran
             store.bugs.unshift(tempBug);
-            
-            // On rafraîchit la vue immédiatement
             renderBugList();
             toggleOverlay(false);
 
-            // On envoie en arrière-plan sans attendre
+            // Préparation image
             let imageBlob = null;
             if (fileInput.files.length > 0) {
                 imageBlob = await new Promise(r => {
@@ -259,8 +299,20 @@
                 imageName: fileInput.files[0]?.name
             };
 
-            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            
+            // Envoi réel à Google
+            try {
+                const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await response.json();
+                if(result.status === "success") {
+                    tempBug.ID = result.id; // On remplace "TEMP" par le vrai ID
+                    renderBugList();
+                }
+            } catch(e) {
+                console.log("Envoi effectué en arrière-plan");
+                // On rafraîchit les données après 3 secondes pour récupérer le vrai ID
+                setTimeout(init, 3000);
+            }
+
             btn.disabled = false;
             btn.innerText = "Enregistrer l'Observation";
         };
